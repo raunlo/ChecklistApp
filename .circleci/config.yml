@@ -29,11 +29,10 @@ jobs:
 
   push-to-heroku:
     # docker image
-     docker:
+    docker:
       - image: cimg/openjdk:17.0
-     steps:
+    steps:
        - checkout
-
        - run:
           name: push-to-heroku
           command: echo 'push to docker'
@@ -44,4 +43,8 @@ workflows:
     # Inside the workflow, you define the jobs you want to run.
     jobs:
       - build-and-test
-      - push-to-heroku
+      - push-to-heroku:
+          filters:
+            branches:
+             only:
+              - main
