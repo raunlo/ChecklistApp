@@ -1,1 +1,1 @@
-![ChecklistApp](https://circleci.com/gh/raunlo/ChecklistApp.svg?style=svg)
+![ChecklistApp](https://circleci.com/gh/raunlo/ChecklistApp/tree/main.svg?style=svg)
