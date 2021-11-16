@@ -3,7 +3,12 @@ package com.raunlo.checklist.resource.v1;
 import com.raunlo.checklist.core.entity.Checklist;
 import com.raunlo.checklist.core.service.ChecklistService;
 import com.raunlo.checklist.resource.BaseResource;
+
 import java.net.URI;
+import java.util.Optional;
+import java.util.concurrent.CompletionStage;
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -20,16 +25,21 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+
+import io.helidon.security.Principal;
+import io.helidon.security.annotations.Authenticated;
+import io.helidon.security.annotations.Authorized;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-@Path("/v1/checklist/{id}")
+@Path("api/v1/checklist")
 @RequestScoped()
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Authenticated()
 public class ChecklistResource implements BaseResource {
 
     private final ChecklistService checklistService;
@@ -40,83 +50,40 @@ public class ChecklistResource implements BaseResource {
     }
 
     @GET()
-    @Operation(description = "Finds checklist by id")
-    @APIResponse(
-        description = "Returns checklist",
-        content = @Content(
-            schema = @Schema(implementation = Checklist.class)
-        ),
-        responseCode = "200"
-    )
-    @APIResponse(
-        description = "Checklist not found",
-        responseCode = "404"
-    )
     @Path("/{id}")
-    public Response getChecklistById(@PathParam("id") int id) {
-        return createResponse(checklistService.findById(id));
+    public CompletionStage<Response> getChecklistById(@PathParam("id") int id) {
+        return checklistService.findById(id)
+                .thenApply(this::createResponse);
     }
 
     @GET()
-    @Operation(description = "find all checklists")
-    @APIResponse(
-        description = "Finds all checklists",
-        content = @Content(
-            schema = @Schema(implementation = Checklist.class)
-        ),
-        responseCode = "200"
-    )
-    public Response getAllCheckLists() {
-        return Response.status(200).entity(checklistService.getAll()).build();
+    public CompletionStage<Response> getAllCheckLists(@Context io.helidon.security.SecurityContext securityContext) {
+        Optional<Principal> principal = securityContext.userPrincipal();
+        return checklistService.getAll()
+                .thenApply(checklists -> Response.status(200).entity(checklists).build());
     }
 
     @POST()
-    @Operation(description = "Saves task")
-    @APIResponse(
-        description = "Saves task",
-        content = @Content(
-            schema = @Schema(implementation = Checklist.class)
-        ),
-        responseCode = "201",
-        headers = @Header(
-            name = "location",
-            description = "URI, what returns saved object"
-        )
-    )
-    public Response saveTask(@NotNull @Valid Checklist checklist, @Context UriInfo uriInfo) {
-        final Checklist savedCheckList = checklistService.save(checklist);
-        final URI getResourceURI = uriInfo.getAbsolutePathBuilder().path(String.valueOf(savedCheckList.getId())).build();
-        return Response.created(getResourceURI).entity(savedCheckList).build();
+    public CompletionStage<Response> saveChecklist(@NotNull @Valid Checklist checklist, @Context UriInfo uriInfo) {
+        return checklistService.save(checklist)
+                .thenApply(savedChecklist -> {
+                    final URI getResourceURI = uriInfo.getAbsolutePathBuilder().path(String.valueOf(savedChecklist.getId())).build();
+                    return Response.created(getResourceURI).entity(savedChecklist).build();
+                });
     }
 
     @PATCH()
-    @Operation(description = "Updates task")
-    @APIResponse(
-        description = "Updates task",
-        content = @Content(
-            mediaType = MediaType.APPLICATION_JSON,
-            schema = @Schema(implementation = Checklist.class)
-        ),
-        responseCode = "200"
-    )
-    public Response updateTask(@NotNull @Valid Checklist checklist) {
-        final Checklist updatedChecklist = checklistService.update(checklist);
-        return Response.ok().entity(updatedChecklist).build();
+    @Path("/{id}")
+    public CompletionStage<Response> updateTask(@NotNull @Valid Checklist checklist, @PathParam("id") Long id) {
+        checklist.setId(id);
+        return checklistService.update(checklist)
+                .thenApply(updatedChecklist -> Response.ok().entity(updatedChecklist).build());
     }
 
     @DELETE
     @Path("/{id}")
-    @Operation(description = "Deletes Task")
-    @APIResponse(
-        description = "Deletes task",
-        content = @Content(
-            mediaType = MediaType.APPLICATION_JSON,
-            schema = @Schema(implementation = Checklist.class)
-        ),
-        responseCode = "204"
-    )
-    public Response deleteTask(@PathParam("id") int id) {
-        checklistService.delete(id);
-        return Response.noContent().build();
+    public CompletionStage<Response> deleteChecklist(@PathParam("id") int id) {
+        return checklistService.delete(id)
+                .thenApply((__) -> Response.noContent().build());
     }
 }
