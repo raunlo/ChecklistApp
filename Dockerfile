@@ -1,6 +1,6 @@
 
 # 1st stage, build the app
-FROM maven:3.6-jdk-11 as build
+FROM maven:3.8.5-amazoncorretto-17 as build
 
 WORKDIR /helidon
 
@@ -17,11 +17,11 @@ RUN mvn package -DskipTests
 RUN echo "done!"
 
 # 2nd stage, build the runtime image
-FROM openjdk:11-jre-slim
+FROM openjdk:17-alpine
 WORKDIR /helidon
 
 # Copy the binary built in the 1st stage
-COPY --from=build /helidon/target/jpa-helidon-sample.jar ./
+COPY --from=build /helidon/target/checklist.jar ./
 COPY --from=build /helidon/target/libs ./libs
 
 CMD ["java", "-jar", "jpa-helidon-sample.jar"]
