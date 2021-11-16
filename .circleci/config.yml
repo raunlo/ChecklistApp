@@ -1,0 +1,29 @@
+version: 2.1
+machine:
+  environment:
+    SHORT_GIT_HASH: $(echo $CIRCLE_SHA1 | cut -c -7)
+orbs:
+  node: circleci/node@3.0.1
+  heroku: circleci/heroku@1.0.1
+jobs:
+  deploy:
+    executor: heroku/default
+    steps:
+      - checkout
+      - run:
+          name: Storing previous commit
+          command: |
+            git rev-parse HEAD > ./commit.txt
+      - heroku/install
+      - setup_remote_docker:
+          version: 20.10.14
+      - run:
+          name: Pushing to heroku registry
+          command: |
+            heroku container:login
+            heroku container:push web -a  $HEROKU_APP_NAME
+            heroku container:release web -a $HEROKU_APP_NAME
+workflows:
+  build-test-deploy:
+    jobs:
+      - deploy

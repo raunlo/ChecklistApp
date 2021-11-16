@@ -1,14 +1,17 @@
 package com.raunlo.checklist.core.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.With;
+
+@With
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 public class Task {
-
-    private int id;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+    private Long id;
+    private String name;
+    private String description;
+    private boolean completed = false;
 }
