@@ -44,6 +44,8 @@ workflows:
     jobs:
       - build-and-test
       - push-to-heroku:
+          requires:
+            - build-and-test
           filters:
             branches:
              only:
