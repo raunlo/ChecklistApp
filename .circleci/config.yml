@@ -43,9 +43,6 @@ workflows:
     # Inside the workflow, you define the jobs you want to run.
     jobs:
       - build-and-test
-  build-and-deploy:
-    jobs:
-      - build-and-test
       - push-to-heroku:
           requires:
             - build-and-test
@@ -53,3 +50,4 @@ workflows:
             branches:
              only:
               - main
+     
