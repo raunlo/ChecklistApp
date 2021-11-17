@@ -51,9 +51,7 @@ public class TaskResource implements BaseResource {
     @APIResponse(
         description = "Task json",
         content = @Content(
-            mediaType = MediaType.APPLICATION_JSON,
-
-        sc)
+            mediaType = MediaType.APPLICATION_JSON)
     )
     public Response findTaskById(@PathParam("id") int id) {
         return createResponse(taskService.findById(id));

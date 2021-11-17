@@ -13,10 +13,11 @@ class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
 
-    @Inject
-    public TaskServiceImpl(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
-    }
+//    @Inject
+//    public TaskServiceImpl(TaskRepository taskRepository) {
+//        this.taskRepository = taskRepository;
+//    }
+    public TaskServiceImpl() {this.taskRepository = null;}
 
     @Override
     public Task save(Task entity) {
