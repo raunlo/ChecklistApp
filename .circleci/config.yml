@@ -21,5 +21,6 @@ workflows:
           cluster-name: 'checklist-cluster'
           container-image-name-updates: 'container=checklist,tag=${CIRCLE_SHA1}'
           family: 'checklist'
+          force-new-deployment: true
           requires:
             - aws-ecr/build-and-push-image
