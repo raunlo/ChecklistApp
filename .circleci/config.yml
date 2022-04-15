@@ -15,7 +15,7 @@ workflows:
     jobs:
      - aws-ecr/build-and-push-image:
           account-url: AWS_ECR_ACCOUNT_URL
-          region: ${AWS_REGION}
+          region: 'eu-west-1'
           repo: ${MY_APP_PREFIX}
           tag: ${CIRCLE_SHA1}
      
