@@ -18,4 +18,3 @@ workflows:
           region: eu-west-1
           repo: ${MY_APP_PREFIX}
           tag: ${CIRCLE_SHA1}
-     
