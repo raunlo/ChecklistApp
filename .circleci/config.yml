@@ -14,6 +14,5 @@ workflows:
   build-and-push-image: 
     jobs:
      - aws-ecr/build-and-push-image:
-          registry-id: AWS_ECR_REGISTRY_ID
           repo: ${MY_APP_PREFIX}
           tag: ${CIRCLE_SHA1}
