@@ -14,5 +14,6 @@ workflows:
   build-and-push-image: 
     jobs:
      - aws-ecr/build-and-push-image:
+          dockerfile: Dockerfile.jlink
           repo: ${MY_APP_PREFIX}
           tag: ${CIRCLE_SHA1}
