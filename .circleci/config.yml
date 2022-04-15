@@ -18,7 +18,7 @@ workflows:
           repo: ${MY_APP_PREFIX}
           tag: ${CIRCLE_SHA1}
      - aws-ecs/deploy-service-update:
-          cluster-name: 'arn:aws:ecs:eu-west-1:202435311856:service/checklist-cluster/checklistSerivce'
+          cluster-name: 'arn:aws:ecs:eu-west-1:202435311856:service/checklist-cluster'
           container-image-name-updates: 'container=checklist,tag=${CIRCLE_SHA1}'
           family: 'checklist'
           force-new-deployment: true
