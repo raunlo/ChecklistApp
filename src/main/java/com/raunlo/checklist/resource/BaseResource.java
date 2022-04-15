@@ -6,11 +6,9 @@ import javax.ws.rs.core.Response;
 public interface BaseResource {
 
 
-    default Response createResponse(Optional<?> entity) {
-        if (entity.isPresent()) {
-            return Response.ok(entity).build();
-        } else {
-            return Response.status(404).build();
-        }
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    default <T> Response createResponse(final Optional<T> entityOptional) {
+        return entityOptional.map(Response::ok).orElse(Response.status(404))
+                .build();
     }
 }

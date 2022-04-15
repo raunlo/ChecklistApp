@@ -3,6 +3,7 @@ package com.raunlo.checklist.core;
 import com.raunlo.checklist.core.repository.CrudRepository;
 import com.raunlo.checklist.core.service.CrudService;
 import java.util.Collection;
+import java.util.Optional;
 
 class CrudServiceImpl<T> implements CrudService<T> {
 
@@ -28,8 +29,8 @@ class CrudServiceImpl<T> implements CrudService<T> {
     }
 
     @Override
-    public void findById(int id) {
-        crudRepository.findById(id);
+    public Optional<T> findById(int id) {
+      return crudRepository.findById(id);
     }
 
     @Override
