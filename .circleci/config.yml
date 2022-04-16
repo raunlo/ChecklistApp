@@ -48,10 +48,10 @@ workflows:
           requires:
             - build-and-test
      - aws-ecs/deploy-service-update:
-          cluster-name: 'checklist-cluster'
-          container-image-name-updates: 'container=checklist,tag=${CIRCLE_SHA1}'
-          family: 'checklist'
-          service-name: 'checklistSerivce
+          cluster-name: '${MY_APP_PREFIX}-cluster'
+          container-image-name-updates: 'container=${MY_APP_PREFIX},tag=${CIRCLE_SHA1}'
+          family: '${MY_APP_PREFIX}'
+          service-name: '${MY_APP_PREFIX}Serivce
 '
           force-new-deployment: true
           requires:
