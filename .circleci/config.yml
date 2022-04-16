@@ -45,6 +45,8 @@ workflows:
             branches:
               only:
                 - main
+          requires:
+            - build-and-test
      - aws-ecs/deploy-service-update:
           cluster-name: 'checklist-cluster'
           container-image-name-updates: 'container=checklist,tag=${CIRCLE_SHA1}'
