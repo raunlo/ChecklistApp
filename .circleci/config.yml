@@ -51,8 +51,7 @@ workflows:
           cluster-name: '${MY_APP_PREFIX}-cluster'
           container-image-name-updates: 'container=${MY_APP_PREFIX},tag=${CIRCLE_SHA1}'
           family: '${MY_APP_PREFIX}'
-          service-name: '${MY_APP_PREFIX}Serivce
-'
+          service-name: '${SERVICE_NAME}'
           force-new-deployment: true
           requires:
             - aws-ecr/build-and-push-image
