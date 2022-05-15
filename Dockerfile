@@ -24,6 +24,6 @@ WORKDIR /helidon
 COPY --from=build /helidon/target/checklist.jar ./
 COPY --from=build /helidon/target/libs ./libs
 
-CMD ["java", "-jar", "jpa-helidon-sample.jar"]
+CMD ["java", "-jar", "checklist.jar"]
 
 EXPOSE 8080
