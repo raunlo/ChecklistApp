@@ -12,7 +12,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            docker build -t heroku-dockerize:circleci .
+            docker build -f dockerfile.jlink -t checklist .
             docker images
   deploy:
     executor: heroku/default
