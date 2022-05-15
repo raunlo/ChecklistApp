@@ -13,7 +13,7 @@ RUN mvn package -DskipTests
 # Do the Maven build to create the custom Java Runtime Image
 # Incremental docker builds will resume here when you change sources
 ADD src src
-RUN mvn -Ddocker.build=true package -Pjlink-image -DskipTests
+RUN mvn -Ddocker.build=true package -Pjlink-image -DskipTests -Djlink.image.addClassDataSharingArchive=false
 RUN echo "done!"
 
 # 2nd stage, build the final image with the JRI built in the 1st stage
