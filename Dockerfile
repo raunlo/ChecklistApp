@@ -26,4 +26,4 @@ COPY --from=build /helidon/target/libs ./libs
 
 CMD ["java", "-jar", "checklist.jar"]
 
-EXPOSE $PORT 8080
+EXPOSE ${PORT}
