@@ -28,6 +28,18 @@ jobs:
        - run:
            name: Test
            command: mvn test
+   deploy:
+      machine: true
+      steps:
+        - checkout
+        - run:
+            name: Build and push Docker image to Heroku
+            command: |
+              sudo curl https://cli-assets.heroku.com/install.sh | sh
+              HEROKU_API_KEY=${HEROKU_API_KEY} heroku container:login
+              HEROKU_API_KEY=${HEROKU_API_KEY} heroku container:push -a python-django-starter web
+              HEROKU_API_KEY=${HEROKU_API_KEY} heroku container:release -a python-django-starter web
+
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#job
@@ -37,7 +49,8 @@ workflows:
   heroku_deploy:
     jobs:
       - build-and-test
-      - heroku/deploy-via-git
+      - heroku/push-docker-image
+      - heroku/push-docker-image
  #  build-and-push-image: 
    #  jobs:
    #   - build-and-test
