@@ -1,24 +1,40 @@
 package com.raunlo.checklist.persistence.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.With;
 
-@Entity
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.QueryHint;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+
+import static com.raunlo.checklist.persistence.model.TaskDbo.TABLE_NAME;
+
+@Entity(name = "TaskDbo")
 @Data
 @With
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = TABLE_NAME)
 public class TaskDbo {
-
+    static final String TABLE_NAME = "TASK";
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq")
+    @SequenceGenerator(name = "seq", sequenceName = "checklist_sequence", allocationSize = 1)
     @Column(name = "task_id")
     private Long id;
 
@@ -30,4 +46,9 @@ public class TaskDbo {
 
     @Column(name = "additional_comments")
     private String taskComments;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "checklist_id")
+    @ToString.Exclude
+    private ChecklistDbo checklistDbo;
 }
