@@ -13,7 +13,7 @@ jobs:
           name: Build Docker image
           command: |
             ls -a
-            docker build -f dockerfile.jlink .
+            docker build -f Dockerfile.jlink .
             docker images
   deploy:
     executor: heroku/default
