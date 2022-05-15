@@ -1,0 +1,7 @@
+server:
+  port: ${$PORT}
+
+security:
+  enabled: false
+  providers:
+    - abac:
