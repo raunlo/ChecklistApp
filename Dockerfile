@@ -24,7 +24,6 @@ WORKDIR /helidon
 COPY --from=build /helidon/target/checklist.jar ./
 COPY --from=build /helidon/target/libs ./libs
 
-CMD ["java", "-jar", "checklist.jar"]
 CMD ["sh", "-c", "java -Dserver.port=$PORT -jar checklist.jar"]
 
 EXPOSE ${PORT}
