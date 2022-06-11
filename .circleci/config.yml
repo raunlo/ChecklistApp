@@ -21,7 +21,7 @@ jobs:
           name: Pushing to heroku registry
           command: |
             heroku container:login
-            heroku container:push jlink --recurisve -a  $HEROKU_APP_NAME
+            heroku container:push jlink --recursive -a  $HEROKU_APP_NAME
             heroku container:release jlink -a $HEROKU_APP_NAME
 workflows:
   build-test-deploy:
