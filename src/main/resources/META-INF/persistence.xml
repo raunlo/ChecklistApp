@@ -11,7 +11,7 @@
         <class>com.raunlo.checklist.persistence.model.TaskDbo</class>
 
         <properties>
-            <property name="eclipselink.deploy-on-startup" value="true"/>
+            <property name="eclipselink.deploy-on-startup" value="false"/>
             <property name="eclipselink.jdbc.native-sql" value="true"/>
             <property name="eclipselink.logging.logger" value="JavaLogger"/>
             <property name="eclipselink.logging.parameters" value="true"/>

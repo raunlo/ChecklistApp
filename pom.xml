@@ -163,6 +163,12 @@
                     <execution>
                         <id>third-party-license-report</id>
                     </execution>
+                    <execution>
+                        <id>jlink-image</id>
+                        <configuration>
+                            <addClassDataSharingArchive>false</addClassDataSharingArchive>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
