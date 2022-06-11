@@ -21,5 +21,5 @@ RUN echo "done!"
 FROM debian:stretch-slim
 WORKDIR /helidon
 COPY --from=build /helidon/target/checklist-jri ./
-CMD ["/bin/sh", "-c",  " /bin/sh  -c /helidon/bin/start --jvm -Dserver.port=$PORT"]
-EXPOSE 8080
+CMD ["/bin/sh", "-c",  " /bin/bash /helidon/bin/start --jvm -Dserver.port=$PORT"]
+EXPOSE $PORT
