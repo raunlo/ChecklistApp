@@ -1,4 +1,7 @@
 version: 2.1
+machine:
+  environment:
+    SHORT_GIT_HASH: $(echo $CIRCLE_SHA1 | cut -c -7)
 orbs:
   node: circleci/node@3.0.1
   heroku: circleci/heroku@1.0.1
@@ -13,7 +16,7 @@ jobs:
           name: Build Docker image
           command: |
             ls -a
-            docker build -f Dockerfile.jlink .
+            docker build -f Dockerfile.jlink . -t $SHORT_GIT_HASH
             docker images
   deploy:
     executor: heroku/default
