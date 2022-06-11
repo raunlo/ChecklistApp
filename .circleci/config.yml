@@ -1,20 +1,11 @@
 version: 2.1
+machine:
+  environment:
+    SHORT_GIT_HASH: $(echo $CIRCLE_SHA1 | cut -c -7)
 orbs:
   node: circleci/node@3.0.1
   heroku: circleci/heroku@1.0.1
 jobs:
-  build-and-test:
-    executor: node/default
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: 20.10.14
-      - run:
-          name: Build Docker image
-          command: |
-            ls -a
-            docker build -f Dockerfile.jlink .
-            docker images
   deploy:
     executor: heroku/default
     steps:
@@ -30,12 +21,9 @@ jobs:
           name: Pushing to heroku registry
           command: |
             heroku container:login
-            heroku container:push jlink -a $HEROKU_APP_NAME
+            heroku container:push jlink --recursive -a  $HEROKU_APP_NAME
             heroku container:release jlink -a $HEROKU_APP_NAME
 workflows:
   build-test-deploy:
     jobs:
-      - build-and-test
-      - deploy:
-          requires:
-            - build-and-test
+      - deploy
