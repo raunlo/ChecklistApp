@@ -1,6 +1,6 @@
 
 # 1st stage, build the app
-FROM helidon/jdk17-graalvm-maven as build
+FROM helidon/jdk17-graalvm-maven:21.3.0 as build
 
 WORKDIR /helidon
 

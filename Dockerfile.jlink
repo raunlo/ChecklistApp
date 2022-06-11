@@ -2,7 +2,6 @@
 # 1st stage, build the app
 FROM maven:3.8.5-openjdk-17 as build
 
-
 WORKDIR /helidon
 
 # Create a first layer to cache the "Maven World" in the local repository.
@@ -22,5 +21,5 @@ RUN echo "done!"
 FROM debian:stretch-slim
 WORKDIR /helidon
 COPY --from=build /helidon/target/checklist-jri ./
-ENTRYPOINT ["sh", "-c",  " /bin/bash   /helidon/bin/start --jvm -Dserver.port=$PORT"]
+ENTRYPOINT ["sh", "-c",  " /bin/sh   /helidon/bin/start --jvm -Dserver.port=$PORT"]
 EXPOSE 8080
