@@ -16,7 +16,7 @@ jobs:
           name: Build Docker image
           command: |
             ls -a
-            docker build  -f Dockerfile.jlink -t $SHORT_GIT_HASH . 
+            docker build  -f Dockerfile.jlink -t myImage:$SHORT_GIT_HASH . 
             docker images
   deploy:
     executor: heroku/default
