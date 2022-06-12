@@ -44,8 +44,9 @@ public class TaskResource implements BaseResource {
     }
 
     @GET()
-    public Response getTasks() {
-        return Response.status(200).entity(taskService.getAll(checklistId)).build();
+    public CompletionStage<Response> getTasks() {
+        return taskService.getAll(checklistId)
+                .thenApply(tasks -> Response.status(200).entity(tasks).build());
     }
 
     @GET()

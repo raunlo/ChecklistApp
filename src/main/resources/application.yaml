@@ -1,7 +1,5 @@
 security:
   enabled: false
-  providers:
-    - abac:
 
 
 
