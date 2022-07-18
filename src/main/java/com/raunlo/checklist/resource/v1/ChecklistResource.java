@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -36,10 +37,9 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 @Path("api/v1/checklist")
-@RequestScoped()
+@ApplicationScoped()
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Authenticated()
 public class ChecklistResource implements BaseResource {
 
     private final ChecklistService checklistService;

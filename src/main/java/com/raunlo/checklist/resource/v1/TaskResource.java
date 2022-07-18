@@ -7,6 +7,7 @@ import com.raunlo.checklist.resource.BaseResource;
 import java.net.URI;
 import java.util.Collection;
 import java.util.concurrent.CompletionStage;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -31,7 +32,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 @Path("api/v1/checklist/{checklist_id}/task")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@RequestScoped()
+@ApplicationScoped()
 public class TaskResource implements BaseResource {
 
     private final TaskService taskService;
