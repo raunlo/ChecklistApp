@@ -8,6 +8,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 @ApplicationScoped
@@ -22,26 +23,31 @@ class ChecklistServiceImpl implements ChecklistService {
 
     @Override
     public CompletionStage<Checklist> save(Checklist entity) {
-        return checklistRepository.saveAsync(entity);
+        return CompletableFuture.supplyAsync(() -> checklistRepository.save(entity));
     }
 
     @Override
     public CompletionStage<Checklist> update(Checklist entity) {
-        return checklistRepository.updateAsync(entity);
+        return CompletableFuture.supplyAsync(() -> checklistRepository.update(entity));
     }
 
     @Override
     public CompletionStage<Void> delete(long id) {
-        return checklistRepository.deleteAsync(id);
+        return CompletableFuture.runAsync(() -> checklistRepository.delete(id));
     }
 
     @Override
     public CompletionStage<Optional<Checklist>> findById(long id) {
-        return checklistRepository.findByIdAsync(id);
+        return CompletableFuture.supplyAsync(() ->  checklistRepository.findById(id));
     }
 
     @Override
     public CompletionStage<Collection<Checklist>> getAll() {
-        return checklistRepository.getAllAsync();
+        return CompletableFuture.supplyAsync(checklistRepository::getAll);
+    }
+
+    @Override
+    public CompletionStage<Collection<Checklist>> saveAll(Collection<Checklist> checklists) {
+        return CompletableFuture.supplyAsync(() -> checklistRepository.saveAll(checklists));
     }
 }

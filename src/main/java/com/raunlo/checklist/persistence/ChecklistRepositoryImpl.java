@@ -38,6 +38,18 @@ class ChecklistRepositoryImpl implements ChecklistRepository {
 
     @Override
     @Transactional
+    public Collection<Checklist> saveAll(Collection<Checklist> entities) {
+        return entities.stream()
+                .map((Checklist entity) -> {
+                    final ChecklistDbo dbo = checklistMapper.map(entity);
+                    entityManager.persist(dbo);
+                    return entity.withId(dbo.getId());
+                })
+                .collect(toList());
+    }
+
+    @Override
+    @Transactional
     public Checklist update(Checklist entity) {
         final ChecklistDbo checklistDbo = checklistMapper.map(entity);
         return checklistMapper.map(entityManager.merge(checklistDbo));

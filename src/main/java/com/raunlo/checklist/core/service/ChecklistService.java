@@ -16,4 +16,6 @@ public interface ChecklistService {
     CompletionStage<Optional<Checklist>> findById(final long id);
 
     CompletionStage<Collection<Checklist>> getAll();
+
+    CompletionStage<Collection<Checklist>> saveAll(Collection<Checklist> checklists);
 }

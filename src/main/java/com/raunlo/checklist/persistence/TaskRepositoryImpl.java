@@ -71,4 +71,17 @@ class TaskRepositoryImpl implements TaskRepository {
                 .map(taskMapper::map)
                 .collect(toList());
     }
+
+    @Override
+    @Transactional
+    public Collection<Task> saveAll(Long checklistId, Collection<Task> tasks) {
+        return tasks
+                .stream()
+                .map(task -> {
+                    final TaskDbo dbo = taskMapper.map(checklistId, task);
+                    entityManager.persist(dbo);
+                    return task.withId(dbo.getId());
+                })
+                .collect(toList());
+    }
 }
