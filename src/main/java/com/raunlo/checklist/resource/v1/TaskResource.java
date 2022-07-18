@@ -5,7 +5,6 @@ import com.raunlo.checklist.core.service.TaskService;
 import com.raunlo.checklist.resource.BaseResource;
 
 import java.net.URI;
-import java.util.Collection;
 import java.util.concurrent.CompletionStage;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
@@ -79,12 +78,5 @@ public class TaskResource implements BaseResource {
     public CompletionStage<Response> deleteTask(@PathParam("id") int id) {
         return taskService.delete(checklistId, id)
                 .thenApply(__ -> Response.noContent().build());
-    }
-
-    @POST
-    @Path("/multiple")
-    public CompletionStage<Response> saveMultiple(@NotNull @Valid Collection<Task> tasks) {
-        return taskService.saveAll(checklistId, tasks)
-                .thenApply(savedTasks -> Response.status(200).entity(savedTasks).build());
     }
 }

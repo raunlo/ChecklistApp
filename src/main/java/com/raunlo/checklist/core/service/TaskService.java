@@ -16,6 +16,4 @@ public interface TaskService {
     CompletionStage<Optional<Task>> findById(final Long checklistId, final long id);
 
     CompletionStage<Collection<Task>> getAll(final Long checklistId);
-
-    CompletionStage<Collection<Task>> saveAll(final Long checklistId, final Collection<Task> tasks);
 }

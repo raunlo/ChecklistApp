@@ -19,5 +19,23 @@ public interface TaskRepository {
 
     Collection<Task> getAll(final Long checklistId);
 
-    Collection<Task> saveAll(final Long checklistId, final Collection<Task> tasks);
+    default CompletionStage<Task> saveAsync(final Long checklistId, final Task entity) {
+        return CompletableFuture.supplyAsync(() -> save(checklistId, entity));
+    }
+
+    default CompletionStage<Task> updateAsync(final Long checklistId, final Task entity) {
+        return CompletableFuture.supplyAsync(() -> update(checklistId, entity));
+    }
+
+    default CompletionStage<Void> deleteAsync(final Long checklistId, final long id) {
+        return CompletableFuture.runAsync(() -> delete(checklistId, id));
+    }
+
+    default CompletionStage<Optional<Task>> findByIdAsync(final Long checklistId, final long id) {
+        return CompletableFuture.supplyAsync(() -> findById(checklistId, id));
+    }
+
+    default CompletionStage<Collection<Task>> getAllAsync(final Long checklistId) {
+        return CompletableFuture.supplyAsync(() -> getAll(checklistId));
+    }
 }
