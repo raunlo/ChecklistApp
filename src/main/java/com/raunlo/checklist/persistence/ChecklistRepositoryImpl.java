@@ -23,9 +23,9 @@ class ChecklistRepositoryImpl implements ChecklistRepository {
     private final ChecklistMapper checklistMapper;
 
     @Inject()
-    ChecklistRepositoryImpl(@ChecklistDB EntityManagerWrapper entityManagerWrapper, ChecklistMapper checklistMapper) {
+    ChecklistRepositoryImpl(ChecklistMapper checklistMapper) {
         this.checklistMapper = checklistMapper;
-        this.entityManager = entityManagerWrapper.getEntityManager();
+        this.entityManager = null;
     }
 
     @Override

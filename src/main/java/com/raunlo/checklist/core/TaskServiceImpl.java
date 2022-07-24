@@ -1,5 +1,6 @@
 package com.raunlo.checklist.core;
 
+import com.raunlo.checklist.core.entity.ChangeOrderRequest;
 import com.raunlo.checklist.core.entity.Task;
 import com.raunlo.checklist.core.repository.TaskRepository;
 import com.raunlo.checklist.core.service.TaskService;
@@ -21,26 +22,31 @@ class TaskServiceImpl implements TaskService {
 
     @Override
     public CompletionStage<Task> save(final Long checklistId, final Task entity) {
-        return taskRepository.saveAsync(checklistId, entity);
+        return taskRepository.save(checklistId, entity);
     }
 
     @Override
     public CompletionStage<Task> update(final Long checklistId, final Task entity) {
-        return taskRepository.updateAsync(checklistId, entity);
+        return taskRepository.update(checklistId, entity);
     }
 
     @Override
     public CompletionStage<Void> delete(final Long checklistId, final long id) {
-        return taskRepository.deleteAsync(checklistId, id);
+        return taskRepository.delete(checklistId, id);
     }
 
     @Override
     public CompletionStage<Optional<Task>> findById(final Long checklistId, final long id) {
-        return taskRepository.findByIdAsync(checklistId, id);
+        return taskRepository.findById(checklistId, id);
     }
 
     @Override
     public CompletionStage<Collection<Task>> getAll(final Long checklistId) {
-        return taskRepository.getAllAsync(checklistId);
+        return taskRepository.getAll(checklistId);
+    }
+
+    @Override
+    public CompletionStage<Void> changeOrder(ChangeOrderRequest changeOrderRequest) {
+        return taskRepository.changeOrder(changeOrderRequest);
     }
 }

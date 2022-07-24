@@ -5,14 +5,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.With;
 
+@Data
 @With
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class Task {
-    private Long id;
-    private String name;
-    private String description;
-    private boolean completed = false;
-    private long order;
+public class ChangeOrderRequest {
+    private long oldOrderNumber;
+    private long newOrderNumber;
+    private long checklistId;
 }

@@ -10,12 +10,11 @@ public interface TaskMapper {
 
     @Mapping(source = "taskName", target = "name")
     @Mapping(source = "taskCompleted", target = "completed")
-    @Mapping(source = "taskComments", target = "description")
     Task map(TaskDbo taskDbo);
 
     @Mapping(source = "task.name", target = "taskName")
     @Mapping(source = "task.completed", target = "taskCompleted")
-    @Mapping(source = "task.description", target = "taskComments")
-    @Mapping(source = "checklistId", target = "checklistDbo.id")
+
+    //@Mapping(source = "checklistId", target = "checklistDbo.id")
     TaskDbo map(Long checklistId, Task task);
 }
