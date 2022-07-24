@@ -4,12 +4,14 @@ import com.raunlo.checklist.core.entity.ChangeOrderRequest;
 import com.raunlo.checklist.core.entity.Task;
 import com.raunlo.checklist.core.repository.TaskRepository;
 import com.raunlo.checklist.persistence.mapper.TaskMapper;
+import com.raunlo.checklist.persistence.model.TaskDbo;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import javax.persistence.EntityManager;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -60,6 +62,7 @@ class TaskDelegateRepository implements TaskRepository {
         return CompletableFuture.supplyAsync(() ->
                 taskDao.getAllTasks(checklistId)
                         .stream()
+                        .sorted(Comparator.comparingLong(TaskDbo::order))
                         .map(taskMapper::map)
                         .collect(toList()));
     }
@@ -67,7 +70,9 @@ class TaskDelegateRepository implements TaskRepository {
     @Override
     public CompletionStage<Void> changeOrder(ChangeOrderRequest changeOrderRequest) {
         return CompletableFuture.runAsync(() -> {
-            taskDao.changeOrderNumbers(changeOrderRequest.getChecklistId(), changeOrderRequest.getOldOrderNumber(), changeOrderRequest.getNewOrderNumber());
+            taskDao.changeOrderNumbers(changeOrderRequest.getChecklistId(),
+                    changeOrderRequest.getOldOrderNumber(),
+                    changeOrderRequest.getNewOrderNumber());
         });
     }
 }
