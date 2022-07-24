@@ -9,9 +9,8 @@ import com.raunlo.checklist.persistence.model.TaskDbo;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import javax.persistence.EntityManager;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -62,17 +61,27 @@ class TaskDelegateRepository implements TaskRepository {
         return CompletableFuture.supplyAsync(() ->
                 taskDao.getAllTasks(checklistId)
                         .stream()
-                        .sorted(Comparator.comparingLong(TaskDbo::order))
                         .map(taskMapper::map)
                         .collect(toList()));
     }
 
     @Override
-    public CompletionStage<Void> changeOrder(ChangeOrderRequest changeOrderRequest) {
+    public CompletionStage<Void> changeOrder(List<Task> tasks) {
         return CompletableFuture.runAsync(() -> {
-            taskDao.changeOrderNumbers(changeOrderRequest.getChecklistId(),
-                    changeOrderRequest.getOldOrderNumber(),
-                    changeOrderRequest.getNewOrderNumber());
+            final List<TaskDbo> taskDbos = tasks
+                    .stream()
+                    .map(taskMapper::map)
+                    .collect(toList());
+            taskDao.updateTasksOrder(taskDbos);
         });
+    }
+
+    @Override
+    public CompletionStage<List<Task>> findAllTasksInOrderBounds(long lowerBound, long upperBound) {
+        return CompletableFuture.supplyAsync(() ->
+                taskDao.findTasksInOrderBounds(lowerBound, upperBound)
+                        .stream()
+                        .map(taskMapper::map)
+                        .collect(toList()));
     }
 }

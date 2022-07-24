@@ -4,9 +4,12 @@ import com.raunlo.checklist.core.entity.ChangeOrderRequest;
 import com.raunlo.checklist.core.entity.Task;
 import com.raunlo.checklist.core.repository.TaskRepository;
 import com.raunlo.checklist.core.service.TaskService;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
@@ -47,6 +50,36 @@ class TaskServiceImpl implements TaskService {
 
     @Override
     public CompletionStage<Void> changeOrder(ChangeOrderRequest changeOrderRequest) {
-        return taskRepository.changeOrder(changeOrderRequest);
+        final long lowerBound = Math.min(changeOrderRequest.getOldOrderNumber(), changeOrderRequest.getNewOrderNumber());
+        final long upperBound = Math.max(changeOrderRequest.getOldOrderNumber(), changeOrderRequest.getNewOrderNumber());
+        return taskRepository.findAllTasksInOrderBounds(lowerBound, upperBound)
+                .thenCompose((final List<Task> tasks) -> {
+                    final List<Task> correctTaskOrder = correctTaskOrder(tasks,
+                            changeOrderRequest.getOldOrderNumber(),
+                            changeOrderRequest.getNewOrderNumber());
+                    return taskRepository.changeOrder(correctTaskOrder);
+                });
+    }
+
+    private List<Task> correctTaskOrder(List<Task> tasks, long oldOrderNumber, long newOrderNumber) {
+        final List<Task> result = new ArrayList<>(tasks.size());
+        final boolean taskOrderNumberDecreased = oldOrderNumber < newOrderNumber;
+
+        for (int i = 0; i < tasks.size(); i++) {
+            final Task task = tasks.get(i);
+            if ( i == 0 && taskOrderNumberDecreased) {
+                result.add(task.withOrder(newOrderNumber));
+                continue;
+            }
+
+            if (i == tasks.size() - 1 && !taskOrderNumberDecreased) {
+                result.add(task.withOrder(newOrderNumber));
+                continue;
+            }
+            final long newElementOrder = taskOrderNumberDecreased ? task.getOrder() - 1 : task.getOrder() + 1;
+            result.add(task.withOrder(newElementOrder));
+        }
+
+        return result;
     }
 }

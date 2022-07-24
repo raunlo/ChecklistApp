@@ -4,7 +4,10 @@ import com.raunlo.checklist.persistence.model.TaskDbo;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 import org.jdbi.v3.sqlobject.config.RegisterConstructorMapper;
 import org.jdbi.v3.sqlobject.customizer.Bind;
+import org.jdbi.v3.sqlobject.customizer.BindBean;
+import org.jdbi.v3.sqlobject.customizer.BindMethods;
 import org.jdbi.v3.sqlobject.statement.GetGeneratedKeys;
+import org.jdbi.v3.sqlobject.statement.SqlBatch;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import org.jdbi.v3.sqlobject.transaction.Transaction;
@@ -15,7 +18,7 @@ import java.util.Optional;
 @RegisterConstructorMapper(TaskDbo.class)
 public interface TaskDao {
 
-    @SqlQuery("SELECT task_id, task_name, task_completed, order_number FROM TASK  WHERE checklist_id = :checklistId")
+    @SqlQuery("SELECT task_id, task_name, task_completed, order_number FROM TASK  WHERE checklist_id = :checklistId ORDER BY order_number")
     List<TaskDbo> getAllTasks(@Bind("checklistId") Long checklistId);
 
 
@@ -39,13 +42,13 @@ public interface TaskDao {
     TaskDbo insert(@Bind("taskName") String taskName, @Bind("taskCompleted") boolean taskCompleted, @Bind("checklistId") Long checklistId);
 
     @Transaction(TransactionIsolationLevel.SERIALIZABLE)
-    @SqlUpdate("""
-            UPDATE task
-               SET order_number = CASE order_number
-                             WHEN :oldOrderNumber THEN (SELECT order_number FROM task WHERE order_number = :newOrderNumber)
-                             WHEN :newOrderNumber THEN (select order_number FROM task WHERE order_number = :oldOrderNumber)
-                          end
-            WHERE order_number IN (:newOrderNumber,:oldOrderNumber) AND checklist_id= :checklistId;
+    @SqlBatch("UPDATE task SET order_number = :task.order where task_id = :task.id")
+    void updateTasksOrder(@BindMethods("task") List<TaskDbo> taskDbos);
+
+    @SqlQuery("""
+        SELECT task_id, task_name, task_completed, order_number FROM task
+            where order_number >= :lowerBound AND order_number <= :upperBound
+            ORDER BY order_number
             """)
-    void changeOrderNumbers(@Bind("checklistId") long checklistId, @Bind("oldOrderNumber") long oldOrderNumber, @Bind("newOrderNumber") long newOrderNumber);
+    List<TaskDbo> findTasksInOrderBounds(@Bind("lowerBound") long lowerBound, @Bind("upperBound") long upperBound);
 }

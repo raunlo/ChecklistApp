@@ -4,8 +4,8 @@ import com.raunlo.checklist.core.entity.ChangeOrderRequest;
 import com.raunlo.checklist.core.entity.Task;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public interface TaskRepository {
@@ -20,5 +20,7 @@ public interface TaskRepository {
 
     CompletionStage<Collection<Task>> getAll(final Long checklistId);
 
-    CompletionStage<Void> changeOrder(final ChangeOrderRequest changeOrderRequest);
+    CompletionStage<Void> changeOrder(final List<Task> tasks);
+
+    CompletionStage<List<Task>> findAllTasksInOrderBounds(final long lowerBound, final long upperBound);
 }

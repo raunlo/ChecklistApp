@@ -64,7 +64,8 @@ public class TaskResource implements BaseResource {
                 });
     }
 
-    @PUT()
+    @PUT
+    @Path("/{id}")
     public CompletionStage<Response> updateTask(@NotNull @Valid Task task) {
         return taskService.update(checklistId, task)
                 .thenApply(updatedTask -> Response.ok().entity(updatedTask).build());
