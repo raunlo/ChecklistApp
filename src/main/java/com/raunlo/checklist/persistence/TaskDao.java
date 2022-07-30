@@ -4,7 +4,6 @@ import com.raunlo.checklist.persistence.model.TaskDbo;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 import org.jdbi.v3.sqlobject.config.RegisterConstructorMapper;
 import org.jdbi.v3.sqlobject.customizer.Bind;
-import org.jdbi.v3.sqlobject.customizer.BindBean;
 import org.jdbi.v3.sqlobject.customizer.BindMethods;
 import org.jdbi.v3.sqlobject.statement.GetGeneratedKeys;
 import org.jdbi.v3.sqlobject.statement.SqlBatch;
@@ -30,7 +29,7 @@ public interface TaskDao {
     void deleteById(@Bind("checklistId") Long checklistId, @Bind("taskId") Long taskId);
 
     @Transaction(TransactionIsolationLevel.SERIALIZABLE)
-    @SqlUpdate("UPDATE TASK SET task_name = :taskName AND task_completed = :taskCompleted WHERE checklist_id = :checklistId AND task_id = :taskId")
+    @SqlUpdate("UPDATE TASK SET task_name = :taskName, task_completed = :taskCompleted WHERE checklist_id = :checklistId AND task_id = :taskId")
     void updateTask(@Bind("checklistId") Long checklistId, @Bind("taskId") Long taskId, @Bind("taskCompleted") Boolean taskCompleted, @Bind("taskName") String taskName);
 
     @Transaction(TransactionIsolationLevel.SERIALIZABLE)
@@ -45,10 +44,17 @@ public interface TaskDao {
     @SqlBatch("UPDATE task SET order_number = :task.order where task_id = :task.id")
     void updateTasksOrder(@BindMethods("task") List<TaskDbo> taskDbos);
 
-    @SqlQuery("""
-        SELECT task_id, task_name, task_completed, order_number FROM task
-            where order_number >= :lowerBound AND order_number <= :upperBound
-            ORDER BY order_number
+    @Transaction(TransactionIsolationLevel.SERIALIZABLE)
+    @SqlBatch("""
+            INSERT INTO task(TASK_ID, TASK_NAME, CHECKLIST_ID, task_completed) VALUES (nextval('checklist_sequence'), :task.taskName, :checklistId, :task.taskCompleted)
             """)
+    @GetGeneratedKeys()
+    List<TaskDbo> saveAll(@BindMethods("task") List<TaskDbo> taskDbos, @Bind("checklistId") Long checklistId);
+
+    @SqlQuery("""
+            SELECT task_id, task_name, task_completed, order_number FROM task
+                where order_number >= :lowerBound AND order_number <= :upperBound
+                ORDER BY order_number
+                """)
     List<TaskDbo> findTasksInOrderBounds(@Bind("lowerBound") long lowerBound, @Bind("upperBound") long upperBound);
 }

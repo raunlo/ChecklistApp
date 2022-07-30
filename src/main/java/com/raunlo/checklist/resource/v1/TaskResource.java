@@ -6,6 +6,8 @@ import com.raunlo.checklist.core.service.TaskService;
 import com.raunlo.checklist.resource.BaseResource;
 
 import java.net.URI;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletionStage;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -66,7 +68,8 @@ public class TaskResource implements BaseResource {
 
     @PUT
     @Path("/{id}")
-    public CompletionStage<Response> updateTask(@NotNull @Valid Task task) {
+    public CompletionStage<Response> updateTask(@NotNull @Valid Task task, @PathParam("id") long taskId) {
+        task.setId(taskId);
         return taskService.update(checklistId, task)
                 .thenApply(updatedTask -> Response.ok().entity(updatedTask).build());
     }
@@ -84,5 +87,12 @@ public class TaskResource implements BaseResource {
         changeOrderRequest.setChecklistId(checklistId);
         return taskService.changeOrder(changeOrderRequest)
                 .thenApply((__) -> Response.status(200).build());
+    }
+
+    @POST
+    @Path("/save-multiple")
+    public CompletionStage<Response> saveMultiple(@NotNull @Valid List<Task> taskList) {
+        return taskService.saveAll(taskList, checklistId)
+                .thenApply((final Collection<Task> tasks) -> Response.status(200).entity(tasks).build());
     }
 }

@@ -1,6 +1,5 @@
 package com.raunlo.checklist.persistence;
 
-import com.raunlo.checklist.core.entity.ChangeOrderRequest;
 import com.raunlo.checklist.core.entity.Task;
 import com.raunlo.checklist.core.repository.TaskRepository;
 import com.raunlo.checklist.persistence.mapper.TaskMapper;
@@ -14,8 +13,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-
-import static java.util.stream.Collectors.toList;
 
 @ApplicationScoped
 class TaskDelegateRepository implements TaskRepository {
@@ -62,7 +59,7 @@ class TaskDelegateRepository implements TaskRepository {
                 taskDao.getAllTasks(checklistId)
                         .stream()
                         .map(taskMapper::map)
-                        .collect(toList()));
+                        .toList());
     }
 
     @Override
@@ -71,7 +68,7 @@ class TaskDelegateRepository implements TaskRepository {
             final List<TaskDbo> taskDbos = tasks
                     .stream()
                     .map(taskMapper::map)
-                    .collect(toList());
+                    .toList();
             taskDao.updateTasksOrder(taskDbos);
         });
     }
@@ -82,6 +79,17 @@ class TaskDelegateRepository implements TaskRepository {
                 taskDao.findTasksInOrderBounds(lowerBound, upperBound)
                         .stream()
                         .map(taskMapper::map)
-                        .collect(toList()));
+                        .toList());
+    }
+
+    @Override
+    public CompletionStage<Collection<Task>> saveAll(List<Task> tasks, Long checklistId) {
+        return CompletableFuture.supplyAsync(() -> {
+                    final List<TaskDbo> taskDbos = tasks.stream().map(taskMapper::map).toList();
+                    return taskDao.saveAll(taskDbos, checklistId)
+                            .stream().map(taskMapper::map)
+                            .toList();
+                }
+        );
     }
 }

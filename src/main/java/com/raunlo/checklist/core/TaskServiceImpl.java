@@ -49,7 +49,12 @@ class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public CompletionStage<Void> changeOrder(ChangeOrderRequest changeOrderRequest) {
+    public CompletionStage<Collection<Task>> saveAll(final List<Task> tasks, Long checklistId) {
+        return taskRepository.saveAll(tasks, checklistId);
+    }
+
+    @Override
+    public CompletionStage<Void> changeOrder(final ChangeOrderRequest changeOrderRequest) {
         final long lowerBound = Math.min(changeOrderRequest.getOldOrderNumber(), changeOrderRequest.getNewOrderNumber());
         final long upperBound = Math.max(changeOrderRequest.getOldOrderNumber(), changeOrderRequest.getNewOrderNumber());
         return taskRepository.findAllTasksInOrderBounds(lowerBound, upperBound)
