@@ -8,7 +8,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <lombok.version>1.18.24</lombok.version>
-        <postgre.sql.version>42.3.3</postgre.sql.version>
+        <postgre.sql.version>42.4.1</postgre.sql.version>
         <org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
     </properties>
     <parent>
