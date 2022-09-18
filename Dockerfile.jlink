@@ -1,6 +1,6 @@
 
 # 1st stage, build the app
-FROM maven:3.8.5-openjdk-17 as build
+FROM maven:3.8.6-amazoncorretto-18 as build
 
 WORKDIR /helidon
 
@@ -18,7 +18,7 @@ RUN echo "done!"
 
 # 2nd stage, build the final image with the JRI built in the 1st stage
 
-FROM debian:stretch-slim
+FROM amazonlinux:2022
 WORKDIR /helidon
 COPY --from=build /helidon/target/checklist-jri ./
 ENTRYPOINT ["/bin/bash", "/helidon/bin/start"]
