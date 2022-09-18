@@ -4,9 +4,9 @@ import com.raunlo.checklist.core.entity.ChangeOrderRequest;
 import com.raunlo.checklist.core.entity.Task;
 import com.raunlo.checklist.core.repository.TaskRepository;
 import com.raunlo.checklist.core.service.TaskService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -55,15 +55,24 @@ class TaskServiceImpl implements TaskService {
 
     @Override
     public CompletionStage<Void> changeOrder(final ChangeOrderRequest changeOrderRequest) {
-        final long lowerBound = Math.min(changeOrderRequest.getOldOrderNumber(), changeOrderRequest.getNewOrderNumber());
-        final long upperBound = Math.max(changeOrderRequest.getOldOrderNumber(), changeOrderRequest.getNewOrderNumber());
-        return taskRepository.findAllTasksInOrderBounds(lowerBound, upperBound)
-                .thenCompose((final List<Task> tasks) -> {
-                    final List<Task> correctTaskOrder = correctTaskOrder(tasks,
-                            changeOrderRequest.getOldOrderNumber(),
-                            changeOrderRequest.getNewOrderNumber());
-                    return taskRepository.changeOrder(correctTaskOrder);
-                });
+        return taskRepository.findById(changeOrderRequest.getChecklistId(), changeOrderRequest.getTaskId())
+                .thenApply((final Optional<Task> task) -> task.map(Task::getOrder)
+                        .orElseThrow(RuntimeException::new)
+                )
+
+                .thenCompose((final Long taskOrderNumber) -> taskRepository.findAllTasksInOrderBounds(
+                                changeOrderRequest.getChecklistId(),
+                                taskOrderNumber,
+                                changeOrderRequest.getNewOrderNumber()
+                        )
+
+                        .thenCompose((final List<Task> tasks) -> {
+                            final List<Task> correctTaskOrder = correctTaskOrder(
+                                    tasks,
+                                    taskOrderNumber,
+                                    changeOrderRequest.getNewOrderNumber());
+                            return taskRepository.changeOrder(correctTaskOrder);
+                        }));
     }
 
     private List<Task> correctTaskOrder(List<Task> tasks, long oldOrderNumber, long newOrderNumber) {
@@ -72,7 +81,7 @@ class TaskServiceImpl implements TaskService {
 
         for (int i = 0; i < tasks.size(); i++) {
             final Task task = tasks.get(i);
-            if ( i == 0 && taskOrderNumberDecreased) {
+            if (i == 0 && taskOrderNumberDecreased) {
                 result.add(task.withOrder(newOrderNumber));
                 continue;
             }

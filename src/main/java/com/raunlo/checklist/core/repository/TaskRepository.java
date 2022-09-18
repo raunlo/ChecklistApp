@@ -21,7 +21,7 @@ public interface TaskRepository {
 
     CompletionStage<Void> changeOrder(final List<Task> tasks);
 
-    CompletionStage<List<Task>> findAllTasksInOrderBounds(final long lowerBound, final long upperBound);
+    CompletionStage<List<Task>> findAllTasksInOrderBounds(final long checklistId, final long taskOrderNumber, final Long newOrderNumber);
 
     CompletionStage<Collection<Task>> saveAll(final List<Task> tasks, Long checklistId);
 }

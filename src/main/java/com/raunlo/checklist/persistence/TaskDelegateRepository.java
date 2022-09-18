@@ -4,9 +4,8 @@ import com.raunlo.checklist.core.entity.Task;
 import com.raunlo.checklist.core.repository.TaskRepository;
 import com.raunlo.checklist.persistence.mapper.TaskMapper;
 import com.raunlo.checklist.persistence.model.TaskDbo;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import java.util.Collection;
 import java.util.List;
@@ -74,9 +73,11 @@ class TaskDelegateRepository implements TaskRepository {
     }
 
     @Override
-    public CompletionStage<List<Task>> findAllTasksInOrderBounds(long lowerBound, long upperBound) {
+    public CompletionStage<List<Task>> findAllTasksInOrderBounds(long checklistId, long taskOrderNumber, Long newOrderNumber) {
+        final long upperBound = Math.max(newOrderNumber, taskOrderNumber);
+        final long lowerBound = Math.min(newOrderNumber, taskOrderNumber);
         return CompletableFuture.supplyAsync(() ->
-                taskDao.findTasksInOrderBounds(lowerBound, upperBound)
+                taskDao.findTasksInOrderBounds(checklistId, lowerBound, upperBound)
                         .stream()
                         .map(taskMapper::map)
                         .toList());

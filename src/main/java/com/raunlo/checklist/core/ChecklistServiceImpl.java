@@ -3,9 +3,9 @@ package com.raunlo.checklist.core;
 import com.raunlo.checklist.core.entity.Checklist;
 import com.raunlo.checklist.core.repository.ChecklistRepository;
 import com.raunlo.checklist.core.service.ChecklistService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;

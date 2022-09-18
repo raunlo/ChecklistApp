@@ -1,10 +1,10 @@
 package com.raunlo.checklist.resource;
 
+import jakarta.ws.rs.core.Response;
+
 import java.util.Optional;
-import javax.ws.rs.core.Response;
 
 public interface BaseResource {
-
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     default <T> Response createResponse(final Optional<T> entityOptional) {

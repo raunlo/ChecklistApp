@@ -53,8 +53,8 @@ public interface TaskDao {
 
     @SqlQuery("""
             SELECT task_id, task_name, task_completed, order_number FROM task
-                where order_number >= :lowerBound AND order_number <= :upperBound
+                where order_number >= :lowerBound AND order_number <= :upperBound AND checklist_id = :checklistId
                 ORDER BY order_number
                 """)
-    List<TaskDbo> findTasksInOrderBounds(@Bind("lowerBound") long lowerBound, @Bind("upperBound") long upperBound);
+    List<TaskDbo> findTasksInOrderBounds(@Bind("checklistId") long checklistId, @Bind("lowerBound") long lowerBound, @Bind("upperBound") long upperBound);
 }

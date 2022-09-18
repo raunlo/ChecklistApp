@@ -1,14 +1,18 @@
 package com.raunlo.checklist.config;
 
 import com.raunlo.checklist.persistence.TaskDao;
+import com.raunlo.checklist.persistence.mapper.ChecklistMapper;
+import com.raunlo.checklist.persistence.mapper.TaskMapper;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
+import org.mapstruct.factory.Mappers;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Produces;
 import javax.sql.DataSource;
 
 @Dependent
@@ -43,5 +47,17 @@ public class ApplicationConfiguration {
     @Produces
     public TaskDao taskDao(Jdbi jdbi) {
         return jdbi.onDemand(TaskDao.class);
+    }
+
+    @Produces
+    @Singleton
+    public TaskMapper taskMapper() {
+        return Mappers.getMapper(TaskMapper.class);
+    }
+
+    @Produces
+    @Singleton
+    public ChecklistMapper checklistMapper() {
+        return Mappers.getMapper(ChecklistMapper.class);
     }
 }
