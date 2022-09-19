@@ -2,6 +2,7 @@ package com.raunlo.checklist.config;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.Liveness;
@@ -13,6 +14,7 @@ import java.sql.SQLException;
 
 @Liveness
 @ApplicationScoped
+@Slf4j
 public class DatabaseHealthCheck implements HealthCheck {
     private final DataSource dataSource;
 
@@ -31,7 +33,7 @@ public class DatabaseHealthCheck implements HealthCheck {
     private boolean isDatabaseAccepting() {
         try (Connection connection = dataSource.getConnection();
                 PreparedStatement statement = connection.prepareStatement("SELECT 1 from task")) {
-             return false;
+                return statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

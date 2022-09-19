@@ -23,4 +23,4 @@ WORKDIR /helidon
 COPY --from=build /helidon/target/checklist-jri ./
 ENTRYPOINT ["/bin/bash", "/helidon/bin/start"]
 EXPOSE 8080
-HEALTHCHECK --interval=5s --timeout=2s CMD curl --fail localhost:8080/heath/ready || kill 1
+HEALTHCHECK --interval=120s --timeout=10s CMD curl --fail localhost:8080/health/live || kill 1
