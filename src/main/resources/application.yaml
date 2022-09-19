@@ -1,5 +1,10 @@
 security:
   enabled: false
+cors:
+  paths:
+    - path-pattern: "/"
+      allow-methods: GET, HEAD, OPTIONS, POST
+      allow-origins: "*"
 
 
 
