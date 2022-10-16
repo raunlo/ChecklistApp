@@ -23,6 +23,6 @@ WORKDIR /helidon
 COPY --from=build /helidon/target/checklist.jar ./
 COPY --from=build /helidon/target/libs ./libs
 
-CMD ["java", "-jar", "checklist.jar"]
+CMD java --enable-preview -jar checklist.jar
 
 EXPOSE 8080

@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -37,29 +36,28 @@ public class TaskResource implements BaseResource {
 
     private final TaskService taskService;
 
-    @PathParam("checklist_id")
-    private Long checklistId;
-
     @Inject()
     public TaskResource(final TaskService taskService) {
         this.taskService = taskService;
     }
 
     @GET()
-    public CompletionStage<Response> getTasks() {
+    public CompletionStage<Response> getTasks(@PathParam("checklist_id") Long checklistId) {
         return taskService.getAll(checklistId)
                 .thenApply(tasks -> Response.status(200).entity(tasks).build());
     }
 
     @GET()
     @Path("/{task_id}")
-    public CompletionStage<Response> findTaskById(@PathParam("task_id") int taskId) {
+    public CompletionStage<Response> findTaskById(@PathParam("task_id") int taskId,
+                                                    @PathParam("checklist_id") Long checklistId) {
         return taskService.findById(checklistId, taskId)
                 .thenApply(this::createResponse);
     }
 
     @POST()
-    public CompletionStage<Response> saveTask(@NotNull @Valid Task task, @Context UriInfo uriInfo) {
+    public CompletionStage<Response> saveTask(@NotNull @Valid Task task, @PathParam("checklist_id") Long checklistId,
+                                                @Context UriInfo uriInfo) {
         return taskService.save(checklistId, task)
                 .thenApply(savedTask -> {
                     final URI getResourceURI = uriInfo.getAbsolutePathBuilder().path(String.valueOf(savedTask.getId())).build();
@@ -70,7 +68,8 @@ public class TaskResource implements BaseResource {
 
     @PUT
     @Path("/{id}")
-    public CompletionStage<Response> updateTask(@NotNull @Valid Task task, @PathParam("id") long taskId) {
+    public CompletionStage<Response> updateTask(@NotNull @Valid Task task, @PathParam("id") long taskId,
+                                                @PathParam("checklist_id") Long checklistId) {
         task.setId(taskId);
         return taskService.update(checklistId, task)
                 .thenApply(updatedTask -> Response.ok().entity(updatedTask).build());
@@ -78,14 +77,15 @@ public class TaskResource implements BaseResource {
 
     @DELETE
     @Path("/{id}")
-    public CompletionStage<Response> deleteTask(@PathParam("id") int id) {
+    public CompletionStage<Response> deleteTask(@PathParam("id") int id, @PathParam("checklist_id") Long checklistId) {
         return taskService.delete(checklistId, id)
                 .thenApply((__) -> Response.noContent().build());
     }
 
     @PATCH
     @Path("/change-order")
-    public CompletionStage<Response> changeTaskOrder(ChangeOrderRequest changeOrderRequest) {
+    public CompletionStage<Response> changeTaskOrder(ChangeOrderRequest changeOrderRequest,
+                                                        @PathParam("checklist_id") Long checklistId) {
         changeOrderRequest.setChecklistId(checklistId);
         return taskService.changeOrder(changeOrderRequest)
                 .thenApply((__) -> Response.status(200).build());
@@ -93,7 +93,8 @@ public class TaskResource implements BaseResource {
 
     @POST
     @Path("/save-multiple")
-    public CompletionStage<Response> saveMultiple(@NotNull @Valid List<Task> taskList) {
+    public CompletionStage<Response> saveMultiple(@NotNull @Valid List<Task> taskList,
+                                                    @PathParam("checklist_id") Long checklistId) {
         return taskService.saveAll(taskList, checklistId)
                 .thenApply((final Collection<Task> tasks) -> Response.status(200).entity(tasks).build());
     }
