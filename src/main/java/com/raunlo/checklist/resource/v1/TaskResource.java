@@ -2,6 +2,7 @@ package com.raunlo.checklist.resource.v1;
 
 import com.raunlo.checklist.core.entity.ChangeOrderRequest;
 import com.raunlo.checklist.core.entity.Task;
+import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
 import com.raunlo.checklist.core.service.TaskService;
 import com.raunlo.checklist.resource.BaseResource;
 
@@ -43,7 +44,14 @@ public class TaskResource implements BaseResource {
 
     @GET()
     public CompletionStage<Response> getTasks(@PathParam("checklist_id") Long checklistId) {
-        return taskService.getAll(checklistId)
+        return taskService.getAll(checklistId, TaskPredefinedFilter.NONE)
+                .thenApply(tasks -> Response.status(200).entity(tasks).build());
+    }
+
+    @GET()
+    @Path("/todo")
+    public CompletionStage<Response> getTodoTasks(@PathParam("checklist_id") Long checklistId) {
+        return taskService.getAll(checklistId, TaskPredefinedFilter.TODO)
                 .thenApply(tasks -> Response.status(200).entity(tasks).build());
     }
 

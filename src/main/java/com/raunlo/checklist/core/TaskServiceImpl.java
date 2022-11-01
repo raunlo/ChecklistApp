@@ -1,6 +1,7 @@
 package com.raunlo.checklist.core;
 
 import com.raunlo.checklist.core.entity.ChangeOrderRequest;
+import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
 import com.raunlo.checklist.core.entity.Task;
 import com.raunlo.checklist.core.repository.TaskRepository;
 import com.raunlo.checklist.core.service.TaskService;
@@ -12,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 class TaskServiceImpl implements TaskService {
@@ -44,8 +46,11 @@ class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public CompletionStage<Collection<Task>> getAll(final Long checklistId) {
-        return taskRepository.getAll(checklistId);
+    public CompletionStage<Collection<Task>> getAll(final Long checklistId, final TaskPredefinedFilter taskPredefinedFilter) {
+        return taskRepository.getAll(checklistId)
+                .thenApply((final Collection<Task> tasks) ->
+                        tasks.stream().filter(taskPredefinedFilter::getTaskFilter)
+                                .collect(Collectors.toList()));
     }
 
     @Override
