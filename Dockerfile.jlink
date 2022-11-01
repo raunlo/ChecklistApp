@@ -1,6 +1,6 @@
 
 # 1st stage, build the app
-FROM maven:3.8.6-amazoncorretto-19 as build
+FROM maven:3.8.6-amazoncorretto-19 as base
 
 WORKDIR /helidon
 
@@ -8,19 +8,27 @@ WORKDIR /helidon
 # Incremental docker builds will always resume after that, unless you update
 # the pom
 ADD pom.xml .
-RUN mvn package -DskipTests
 
 # Do the Maven build to create the custom Java Runtime Image
 # Incremental docker builds will resume here when you change sources
 ADD src src
+RUN mvn install
+
+FROM base as integration-tests
+RUN mvn test-compile failsafe:integration-test failsafe:verify
+
+FROM base as built-image
+
 RUN mvn -Ddocker.build=true package -Pjlink-image -DskipTests -Djlink.image.addClassDataSharingArchive=false
-RUN echo "done!"
 
 # 2nd stage, build the final image with the JRI built in the 1st stage
 
 FROM amazonlinux:2022
 WORKDIR /helidon
-COPY --from=build /helidon/target/checklist-jri ./
+COPY --from=built-image /helidon/target/checklist-jri ./
 ENTRYPOINT ["/bin/bash", "/helidon/bin/start"]
 EXPOSE 8080
 HEALTHCHECK --interval=120s --timeout=10s CMD curl --fail localhost:8080/health/live || kill 1
+
+
+

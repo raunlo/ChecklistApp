@@ -30,4 +30,16 @@ services:
     depends_on:
       db:
         condition: service_healthy
+  it-test-runner:
+      build:
+        dockerfile: Dockerfile.base
+      environment:
+        JDBC_DATABASE_URL: "jdbc:postgresql://db:5432/postgres"
+        JDBC_DATABASE_USER: "postgres"
+        JDBC_DATABASE_PASSWORD: "postgres"
+      depends_on:
+        db:
+          condition: service_healthy
+
+
 

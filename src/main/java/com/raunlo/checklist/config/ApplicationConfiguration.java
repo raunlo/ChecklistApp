@@ -1,6 +1,7 @@
 package com.raunlo.checklist.config;
 
-import com.raunlo.checklist.persistence.TaskDao;
+import com.raunlo.checklist.persistence.dao.ChecklistDao;
+import com.raunlo.checklist.persistence.dao.TaskDao;
 import com.raunlo.checklist.persistence.mapper.ChecklistMapper;
 import com.raunlo.checklist.persistence.mapper.TaskMapper;
 import com.zaxxer.hikari.HikariConfig;
@@ -48,6 +49,9 @@ public class ApplicationConfiguration {
     public TaskDao taskDao(Jdbi jdbi) {
         return jdbi.onDemand(TaskDao.class);
     }
+
+    @Produces
+    public ChecklistDao checklistDao(Jdbi jdbi) {return jdbi.onDemand(ChecklistDao.class);    }
 
     @Produces
     @Singleton

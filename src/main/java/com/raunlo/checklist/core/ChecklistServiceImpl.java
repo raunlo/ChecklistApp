@@ -22,26 +22,26 @@ class ChecklistServiceImpl implements ChecklistService {
 
     @Override
     public CompletionStage<Checklist> save(Checklist entity) {
-        return checklistRepository.saveAsync(entity);
+        return checklistRepository.save(entity);
     }
 
     @Override
     public CompletionStage<Checklist> update(Checklist entity) {
-        return checklistRepository.updateAsync(entity);
+        return checklistRepository.update(entity);
     }
 
     @Override
     public CompletionStage<Void> delete(long id) {
-        return checklistRepository.deleteAsync(id);
+        return checklistRepository.delete(id);
     }
 
     @Override
     public CompletionStage<Optional<Checklist>> findById(long id) {
-        return checklistRepository.findByIdAsync(id);
+        return checklistRepository.findById(id);
     }
 
     @Override
     public CompletionStage<Collection<Checklist>> getAll() {
-        return checklistRepository.getAllAsync();
+        return checklistRepository.getAll();
     }
 }

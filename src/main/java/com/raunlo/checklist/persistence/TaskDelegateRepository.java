@@ -2,6 +2,7 @@ package com.raunlo.checklist.persistence;
 
 import com.raunlo.checklist.core.entity.Task;
 import com.raunlo.checklist.core.repository.TaskRepository;
+import com.raunlo.checklist.persistence.dao.TaskDao;
 import com.raunlo.checklist.persistence.mapper.TaskMapper;
 import com.raunlo.checklist.persistence.model.TaskDbo;
 import jakarta.enterprise.context.ApplicationScoped;

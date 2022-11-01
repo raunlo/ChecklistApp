@@ -1,4 +1,4 @@
-package com.raunlo.checklist.persistence;
+package com.raunlo.checklist.persistence.dao;
 
 import com.raunlo.checklist.persistence.model.TaskDbo;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;

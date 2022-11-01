@@ -15,4 +15,4 @@ CREATE TABLE IF NOT EXISTS TASK(
     CONSTRAINT checklist_id_FK FOREIGN KEY(checklist_id) REFERENCES CHECKLIST(checklist_id) ON DELETE CASCADE
 );
 
-INSERT INTO CHECKLIST(checklist_id, checklist_name) VALUES(nextval('checklist_sequence'), "test")
+INSERT INTO CHECKLIST(checklist_id, checklist_name) VALUES(nextval('checklist_sequence'), 'test')

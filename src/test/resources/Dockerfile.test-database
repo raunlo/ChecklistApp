@@ -1,0 +1,7 @@
+FROM postgres:14.2
+
+WORKDIR /docker-entrypoint-initdb.d
+
+COPY ./init.sql .
+
+EXPOSE 5432
