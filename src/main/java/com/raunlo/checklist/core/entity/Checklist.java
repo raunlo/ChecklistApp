@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.With;
 
 import jakarta.validation.constraints.NotNull;
+
+import java.util.ArrayList;
 import java.util.Collection;
 
 @Data
@@ -14,7 +16,7 @@ import java.util.Collection;
 @NotNull
 @NoArgsConstructor
 public class Checklist {
-    private Collection<Task> tasks;
+    private Collection<Task> tasks = new ArrayList<>();
     private Long id;
     private String name;
 }

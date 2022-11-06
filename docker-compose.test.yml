@@ -12,35 +12,20 @@ services:
       - POSTGRES_PASSWORD=postgres
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready" ]
-      interval: 10s
-      timeout: 5s
+      interval: 50s
+      timeout: 60s
       retries: 5
-  rest:
-    restart: on-failure
+      start_period: 80s
+  it-test-runner:
     build:
       dockerfile: Dockerfile.jlink
-    ports:
-      - "8080:8080"
+      target: base
+      context: .
     environment:
       JDBC_DATABASE_URL: "jdbc:postgresql://db:5432/postgres"
       JDBC_DATABASE_USER: "postgres"
       JDBC_DATABASE_PASSWORD: "postgres"
-      PORT: 8080
     depends_on:
       db:
         condition: service_healthy
-  it-test-runner:
-      build:
-        dockerfile: Dockerfile.jlink
-        target: base
-      environment:
-        JDBC_DATABASE_URL: "jdbc:postgresql://db:5432/postgres"
-        JDBC_DATABASE_USER: "postgres"
-        JDBC_DATABASE_PASSWORD: "postgres"
-      depends_on:
-        db:
-          condition: service_healthy
-      command: bash -c "mvn failsafe:integration-test failsafe:verify"
-
-
-
+    command: bash -c "mvn failsafe:integration-test failsafe:verify"

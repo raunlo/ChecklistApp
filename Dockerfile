@@ -1,6 +1,6 @@
 
 # 1st stage, build the app
-FROM maven:3.8.6-amazoncorretto-18 as build
+FROM maven:3.8.6-amazoncorretto-19 as build
 
 WORKDIR /helidon
 
@@ -8,10 +8,8 @@ WORKDIR /helidon
 # Incremental docker builds will always resume after that, unless you update
 # the pom
 ADD pom.xml .
-RUN mvn package -DskipTests
 
-# Do the Maven build!
-# Incremental docker builds will resume here when you change sources
+
 ADD src src
 RUN mvn package -DskipTests
 

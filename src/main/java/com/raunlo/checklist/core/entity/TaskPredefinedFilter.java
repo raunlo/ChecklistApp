@@ -8,9 +8,10 @@ public enum TaskPredefinedFilter {
             case TODO -> {
                 return !task.isCompleted();
             }
-            case NONE, default -> {
+            case NONE -> {
                 return true;
             }
         }
+        return true;
     }
 }

@@ -1,4 +1,9 @@
 security:
   enabled: false
+server:
+  experimental:
+    http2:
+      enable: true
+      max-content-length: 16384
 
 

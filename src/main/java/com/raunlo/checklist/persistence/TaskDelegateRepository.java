@@ -2,6 +2,7 @@ package com.raunlo.checklist.persistence;
 
 import com.raunlo.checklist.core.entity.Task;
 import com.raunlo.checklist.core.repository.TaskRepository;
+import com.raunlo.checklist.persistence.dao.TaskDao;
 import com.raunlo.checklist.persistence.mapper.TaskMapper;
 import com.raunlo.checklist.persistence.model.TaskDbo;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -12,15 +13,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @ApplicationScoped
 class TaskDelegateRepository implements TaskRepository {
 
     private final TaskDao taskDao;
     private final TaskMapper taskMapper;
+    private final ExecutorService executorService;
 
     @Inject()
     TaskDelegateRepository(TaskDao taskDao, TaskMapper taskMapper) {
+        executorService = Executors.newVirtualThreadPerTaskExecutor();
         this.taskDao = taskDao;
         this.taskMapper = taskMapper;
     }
@@ -28,7 +33,8 @@ class TaskDelegateRepository implements TaskRepository {
     @Override
     public CompletionStage<Task> save(final Long checklistId, final Task entity) {
         return CompletableFuture.supplyAsync(() ->
-                taskMapper.map(taskDao.insert(entity.getName(), entity.isCompleted(), checklistId)));
+                        taskMapper.map(taskDao.insert(entity.getName(), entity.isCompleted(), checklistId)),
+                executorService);
     }
 
     @Override
@@ -36,20 +42,20 @@ class TaskDelegateRepository implements TaskRepository {
         return CompletableFuture.supplyAsync(() -> {
             taskDao.updateTask(checklistId, entity.getId(), entity.isCompleted(), entity.getName());
             return entity;
-        });
+        }, executorService);
     }
 
     @Override
     public CompletionStage<Void> delete(final Long checklistId, final long id) {
         return CompletableFuture.runAsync(() ->
-                taskDao.deleteById(checklistId, id));
+                taskDao.deleteById(checklistId, id), executorService);
     }
 
     @Override
     public CompletionStage<Optional<Task>> findById(final Long checklistId, final long id) {
         return CompletableFuture.supplyAsync(() ->
                 taskDao.findById(checklistId, id)
-                        .map(taskMapper::map));
+                        .map(taskMapper::map), executorService);
     }
 
     @Override
@@ -58,7 +64,7 @@ class TaskDelegateRepository implements TaskRepository {
                 taskDao.getAllTasks(checklistId)
                         .stream()
                         .map(taskMapper::map)
-                        .toList());
+                        .toList(), executorService);
     }
 
     @Override
@@ -69,7 +75,7 @@ class TaskDelegateRepository implements TaskRepository {
                     .map(taskMapper::map)
                     .toList();
             taskDao.updateTasksOrder(taskDbos);
-        });
+        }, executorService);
     }
 
     @Override
@@ -80,7 +86,7 @@ class TaskDelegateRepository implements TaskRepository {
                 taskDao.findTasksInOrderBounds(checklistId, lowerBound, upperBound)
                         .stream()
                         .map(taskMapper::map)
-                        .toList());
+                        .toList(), executorService);
     }
 
     @Override
@@ -90,7 +96,7 @@ class TaskDelegateRepository implements TaskRepository {
                     return taskDao.saveAll(taskDbos, checklistId)
                             .stream().map(taskMapper::map)
                             .toList();
-                }
+                }, executorService
         );
     }
 }
