@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <properties>
         <assert4j.version>3.4.1</assert4j.version>
-        <java.version>19</java.version>
+        <java.version>18</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <lombok.version>1.18.24</lombok.version>
@@ -155,9 +155,6 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.1</version>
                 <configuration>
-                    <compilerArgs>
-                        --enable-preview
-                    </compilerArgs>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <verbose>true</verbose>
@@ -185,9 +182,6 @@
                     <execution>
                         <id>jlink-image</id>
                         <configuration>
-                            <defaultJvmOptions>
-                                --enable-preview
-                            </defaultJvmOptions>
                             <addClassDataSharingArchive>false</addClassDataSharingArchive>
                         </configuration>
                     </execution>

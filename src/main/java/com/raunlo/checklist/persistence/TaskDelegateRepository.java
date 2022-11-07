@@ -25,7 +25,7 @@ class TaskDelegateRepository implements TaskRepository {
 
     @Inject()
     TaskDelegateRepository(TaskDao taskDao, TaskMapper taskMapper) {
-        executorService = Executors.newVirtualThreadPerTaskExecutor();
+        executorService = Executors.newScheduledThreadPool(2);
         this.taskDao = taskDao;
         this.taskMapper = taskMapper;
     }
