@@ -10,7 +10,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <lombok.version>1.18.24</lombok.version>
-        <postgre.sql.version>42.5.0</postgre.sql.version>
+        <postgre.sql.version>42.5.1</postgre.sql.version>
         <org.mapstruct.version>1.5.3.Final</org.mapstruct.version>
     </properties>
     <parent>
