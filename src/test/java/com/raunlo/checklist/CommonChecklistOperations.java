@@ -2,6 +2,7 @@ package com.raunlo.checklist;
 
 import com.raunlo.checklist.core.entity.Checklist;
 import com.raunlo.checklist.core.entity.Task;
+import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
@@ -63,8 +64,14 @@ public class CommonChecklistOperations {
         assertThat(response.getStatus()).isEqualTo(204);
     }
 
-    public Collection<Task> getAllTasks(long checklistId) {
-        final Response response = webTarget.path(BASE_PATH + checklistId + "/task")
+    public Collection<Task> getAllTasks(long checklistId, TaskPredefinedFilter taskPredefinedFilter) {
+        WebTarget getTasksWebTarget = webTarget.path(BASE_PATH + checklistId + "/task");
+        if (taskPredefinedFilter != null) {
+            getTasksWebTarget = getTasksWebTarget.queryParam("filterType",
+                    taskPredefinedFilter.name().toLowerCase());
+        }
+
+        final Response response = getTasksWebTarget
                 .request()
                 .get();
 

@@ -2,6 +2,7 @@ package com.raunlo.checklist;
 
 import com.raunlo.checklist.core.entity.Checklist;
 import com.raunlo.checklist.core.entity.Task;
+import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
 import io.helidon.microprofile.tests.junit5.Configuration;
 import io.helidon.microprofile.tests.junit5.HelidonTest;
 import jakarta.ws.rs.core.Response;
@@ -9,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @HelidonTest
 @Configuration(configSources = "application.yaml")
@@ -47,8 +48,44 @@ public class ChecklistFunctionalIT extends CommonChecklistOperations {
         final Task createdTask2 = successfullyCreatesTask(createdChecklist.getId(), new Task().withName("new task2"));
         final Task createdTask3 = successfullyCreatesTask(createdChecklist.getId(), new Task().withName("new task3"));
 
-        final Collection<Task> allTasks = getAllTasks(createdChecklist.getId());
+        final Collection<Task> allTasks = getAllTasks(createdChecklist.getId(), null);
         assertThat(allTasks).contains(createdTask3, createdTask1, createdTask2);
+    }
+
+    @Test
+    public void successfullyReturnsCompletedTaskWithCompletedFilter() {
+        final Checklist createdChecklist = createChecklist(new Checklist().withName("finds_all_tasks"));
+        final Task createdTask1 = successfullyCreatesTask(createdChecklist.getId(), new Task().withName("new task"));
+        final Task createdTask2 = successfullyCreatesTask(createdChecklist.getId(), new Task().withName("new task2"));
+        final Task createdTask3 = successfullyCreatesTask(createdChecklist.getId(), new Task().withName("new task3"));
+
+        Collection<Task> completedTasks = getAllTasks(createdChecklist.getId(), TaskPredefinedFilter.COMPLETED);
+        assertThat(completedTasks).isEmpty();
+
+        final Task updatedTask = createdTask1.withCompleted(Boolean.TRUE);
+        updateTask(createdChecklist.getId(), updatedTask);
+
+        completedTasks = getAllTasks(createdChecklist.getId(), TaskPredefinedFilter.COMPLETED);
+        assertThat(completedTasks).hasSize(1)
+                .contains(updatedTask);
+    }
+
+    @Test
+    public void successfullyReturnsTODOTaskWithCompletedFilter() {
+        final Checklist createdChecklist = createChecklist(new Checklist().withName("finds_all_tasks"));
+        final Task createdTask1 = successfullyCreatesTask(createdChecklist.getId(), new Task().withName("new task"));
+        final Task createdTask2 = successfullyCreatesTask(createdChecklist.getId(), new Task().withName("new task2"));
+        final Task createdTask3 = successfullyCreatesTask(createdChecklist.getId(), new Task().withName("new task3"));
+
+        Collection<Task> completedTasks = getAllTasks(createdChecklist.getId(), TaskPredefinedFilter.TODO);
+        assertThat(completedTasks).hasSize(3);
+
+        final Task updatedTask = createdTask1.withCompleted(Boolean.TRUE);
+        updateTask(createdChecklist.getId(), updatedTask);
+
+        completedTasks = getAllTasks(createdChecklist.getId(), TaskPredefinedFilter.TODO);
+        assertThat(completedTasks).hasSize(2)
+                .contains(createdTask3, createdTask2);
     }
 
     @Test

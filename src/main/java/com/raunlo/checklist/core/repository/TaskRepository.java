@@ -1,6 +1,7 @@
 package com.raunlo.checklist.core.repository;
 
 import com.raunlo.checklist.core.entity.Task;
+import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,7 +18,7 @@ public interface TaskRepository {
 
     CompletionStage<Optional<Task>> findById(final Long checklistId, final long id);
 
-    CompletionStage<Collection<Task>> getAll(final Long checklistId);
+    CompletionStage<Collection<Task>> getAll(final Long checklistId, final TaskPredefinedFilter predefinedFilter);
 
     CompletionStage<Void> changeOrder(final List<Task> tasks);
 

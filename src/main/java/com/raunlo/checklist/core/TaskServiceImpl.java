@@ -47,10 +47,7 @@ class TaskServiceImpl implements TaskService {
 
     @Override
     public CompletionStage<Collection<Task>> getAll(final Long checklistId, final TaskPredefinedFilter taskPredefinedFilter) {
-        return taskRepository.getAll(checklistId)
-                .thenApply((final Collection<Task> tasks) ->
-                        tasks.stream().filter(taskPredefinedFilter::getTaskFilter)
-                                .collect(Collectors.toList()));
+        return taskRepository.getAll(checklistId, taskPredefinedFilter);
     }
 
     @Override

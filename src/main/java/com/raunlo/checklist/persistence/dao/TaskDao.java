@@ -1,5 +1,6 @@
 package com.raunlo.checklist.persistence.dao;
 
+import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
 import com.raunlo.checklist.persistence.model.TaskDbo;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 import org.jdbi.v3.sqlobject.config.RegisterConstructorMapper;
@@ -17,8 +18,19 @@ import java.util.Optional;
 @RegisterConstructorMapper(TaskDbo.class)
 public interface TaskDao {
 
-    @SqlQuery("SELECT task_id, task_name, task_completed, order_number FROM TASK  WHERE checklist_id = :checklistId ORDER BY order_number")
-    List<TaskDbo> getAllTasks(@Bind("checklistId") Long checklistId);
+    @SqlQuery("""
+                            SELECT task_id, task_name, task_completed, order_number
+                            FROM TASK
+                            WHERE checklist_id = :checklistId AND
+                                (:filterType IS NULL OR
+                                CASE :filterType
+                                    WHEN 'TODO' THEN task_completed = false
+                                    WHEN 'COMPLETED' then task_completed = true
+                                END)
+                            ORDER BY order_number
+
+            """)
+    List<TaskDbo> getAllTasks(@Bind("checklistId") Long checklistId, @Bind("filterType") TaskPredefinedFilter filterType);
 
 
     @SqlQuery("SELECT task_id, task_name, task_completed, order_number FROM task WHERE checklist_id = :checklistId AND task_id = :taskId")

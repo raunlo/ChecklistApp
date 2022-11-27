@@ -1,6 +1,7 @@
 package com.raunlo.checklist.persistence;
 
 import com.raunlo.checklist.core.entity.Task;
+import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
 import com.raunlo.checklist.core.repository.TaskRepository;
 import com.raunlo.checklist.persistence.dao.TaskDao;
 import com.raunlo.checklist.persistence.mapper.TaskMapper;
@@ -59,9 +60,9 @@ class TaskDelegateRepository implements TaskRepository {
     }
 
     @Override
-    public CompletionStage<Collection<Task>> getAll(final Long checklistId) {
+    public CompletionStage<Collection<Task>> getAll(final Long checklistId, final TaskPredefinedFilter predefinedFilter) {
         return CompletableFuture.supplyAsync(() ->
-                taskDao.getAllTasks(checklistId)
+                taskDao.getAllTasks(checklistId, predefinedFilter)
                         .stream()
                         .map(taskMapper::map)
                         .toList(), executorService);
