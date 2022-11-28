@@ -1,10 +1,13 @@
 package com.raunlo.checklist.core;
 
 import com.raunlo.checklist.core.entity.ChangeOrderRequest;
+import com.raunlo.checklist.core.entity.Error;
 import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
 import com.raunlo.checklist.core.entity.Task;
 import com.raunlo.checklist.core.repository.TaskRepository;
 import com.raunlo.checklist.core.service.TaskService;
+import com.raunlo.checklist.core.validator.BeanValidator;
+import io.vavr.control.Either;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -13,21 +16,23 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
+    private final BeanValidator validator;
 
     @Inject
-    public TaskServiceImpl(TaskRepository taskRepository) {
+    public TaskServiceImpl(TaskRepository taskRepository, BeanValidator validator) {
         this.taskRepository = taskRepository;
+        this.validator = validator;
     }
 
     @Override
-    public CompletionStage<Task> save(final Long checklistId, final Task entity) {
-        return taskRepository.save(checklistId, entity);
+    public Either<CompletionStage<Error>, CompletionStage<Task>> save(final Long checklistId, final Task entity) {
+        return validator.validate(entity)
+                .map(task -> taskRepository.save(checklistId, task));
     }
 
     @Override

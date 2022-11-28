@@ -6,7 +6,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper
-public interface TaskMapper {
+public interface TaskDboMapper {
     @Mapping(source = "taskName", target = "name")
     @Mapping(source = "taskCompleted", target = "completed")
     Task map(TaskDbo taskDbo);

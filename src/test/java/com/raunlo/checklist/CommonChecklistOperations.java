@@ -3,6 +3,7 @@ package com.raunlo.checklist;
 import com.raunlo.checklist.core.entity.Checklist;
 import com.raunlo.checklist.core.entity.Task;
 import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
+import com.raunlo.checklist.resource.dto.TaskDto;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
@@ -35,19 +36,25 @@ public class CommonChecklistOperations {
         return savedChecklist;
     }
 
-    public Task successfullyCreatesTask(long checklistId, Task task) {
-        final Response response = webTarget.path(BASE_PATH + checklistId + "/task")
+
+    public Response createTask(long checklistId, TaskDto task) {
+        return webTarget.path(BASE_PATH + checklistId + "/task")
                 .request()
                 .post(Entity.entity(task, MediaType.APPLICATION_JSON_TYPE));
-        final Task createdTask = response.readEntity(Task.class);
+    }
 
-        assertThat(response.getStatus()).isEqualTo(201);
-        assertThat(createdTask.getId()).isNotNull();
-        assertThat(createdTask.getName()).isEqualTo(task.getName());
-        assertThat(createdTask.isCompleted()).isEqualTo(task.isCompleted());
-        assertThat(webTarget.getUri().toString() + BASE_PATH + checklistId + "/task/" + createdTask.getId());
 
-        return createdTask;
+    public TaskDto successfullyCreatesTask(long checklistId, TaskDto task) {
+            try (final Response createTaskResponse = createTask(checklistId, task)){
+                final TaskDto createdTask = createTaskResponse.readEntity(TaskDto.class);
+                assertThat(createTaskResponse.getStatus()).isEqualTo(201);
+                assertThat(createdTask.id()).isNotNull();
+                assertThat(createdTask.name()).isEqualTo(task.name());
+                assertThat(createdTask.completed()).isEqualTo(task.completed());
+                assertThat(webTarget.getUri().toString() + BASE_PATH + checklistId + "/task/" + createdTask.id());
+
+                return createdTask;
+        }
     }
 
     public Response getTask(long checklistId, long taskId) {
@@ -64,7 +71,7 @@ public class CommonChecklistOperations {
         assertThat(response.getStatus()).isEqualTo(204);
     }
 
-    public Collection<Task> getAllTasks(long checklistId, TaskPredefinedFilter taskPredefinedFilter) {
+    public Collection<TaskDto> getAllTasks(long checklistId, TaskPredefinedFilter taskPredefinedFilter) {
         WebTarget getTasksWebTarget = webTarget.path(BASE_PATH + checklistId + "/task");
         if (taskPredefinedFilter != null) {
             getTasksWebTarget = getTasksWebTarget.queryParam("filterType",
@@ -81,12 +88,13 @@ public class CommonChecklistOperations {
         });
     }
 
-    public Task updateTask(long checklistId, Task task) {
-        final Response response = webTarget.path(BASE_PATH + checklistId + "/task/" + task.getId())
+    public TaskDto updateTask(long checklistId, TaskDto task) {
+        try (final Response response = webTarget.path(BASE_PATH + checklistId + "/task/" + task.id())
                 .request()
-                .put(Entity.entity(task, MediaType.APPLICATION_JSON_TYPE));
+                .put(Entity.entity(task, MediaType.APPLICATION_JSON_TYPE))) {
 
-        assertThat(response.getStatus()).isEqualTo(200);
-        return response.readEntity(Task.class);
+            assertThat(response.getStatus()).isEqualTo(200);
+            return response.readEntity(TaskDto.class);
+        }
     }
 }

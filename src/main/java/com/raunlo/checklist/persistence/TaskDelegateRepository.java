@@ -4,7 +4,7 @@ import com.raunlo.checklist.core.entity.Task;
 import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
 import com.raunlo.checklist.core.repository.TaskRepository;
 import com.raunlo.checklist.persistence.dao.TaskDao;
-import com.raunlo.checklist.persistence.mapper.TaskMapper;
+import com.raunlo.checklist.persistence.mapper.TaskDboMapper;
 import com.raunlo.checklist.persistence.model.TaskDbo;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -21,11 +21,11 @@ import java.util.concurrent.Executors;
 class TaskDelegateRepository implements TaskRepository {
 
     private final TaskDao taskDao;
-    private final TaskMapper taskMapper;
+    private final TaskDboMapper taskMapper;
     private final ExecutorService executorService;
 
     @Inject()
-    TaskDelegateRepository(TaskDao taskDao, TaskMapper taskMapper) {
+    TaskDelegateRepository(TaskDao taskDao, TaskDboMapper taskMapper) {
         executorService = Executors.newScheduledThreadPool(2);
         this.taskDao = taskDao;
         this.taskMapper = taskMapper;

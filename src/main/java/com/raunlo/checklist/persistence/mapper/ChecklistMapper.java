@@ -5,9 +5,8 @@ import com.raunlo.checklist.persistence.model.ChecklistDbo;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValueMappingStrategy;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(uses = TaskMapper.class, nullValueIterableMappingStrategy = NullValueMappingStrategy.RETURN_DEFAULT)
+@Mapper(uses = TaskDboMapper.class, nullValueIterableMappingStrategy = NullValueMappingStrategy.RETURN_DEFAULT)
 public interface ChecklistMapper {
 
     @Mapping(target = "taskDbos", source = "tasks", defaultExpression = "java(new ArrayList<>())")

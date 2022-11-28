@@ -1,8 +1,10 @@
 package com.raunlo.checklist.core.service;
 
 import com.raunlo.checklist.core.entity.ChangeOrderRequest;
+import com.raunlo.checklist.core.entity.Error;
 import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
 import com.raunlo.checklist.core.entity.Task;
+import io.vavr.control.Either;
 
 import java.util.Collection;
 import java.util.List;
@@ -10,7 +12,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 public interface TaskService {
-    CompletionStage<Task> save(final Long checklistId, final Task entity);
+    Either<CompletionStage<Error>, CompletionStage<Task>> save(final Long checklistId, final Task entity);
 
     CompletionStage<Task> update(final Long checklistId, final Task entity);
 

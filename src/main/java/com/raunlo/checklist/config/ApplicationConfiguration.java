@@ -3,8 +3,9 @@ package com.raunlo.checklist.config;
 import com.raunlo.checklist.persistence.dao.ChecklistDao;
 import com.raunlo.checklist.persistence.dao.TaskDao;
 import com.raunlo.checklist.persistence.mapper.ChecklistMapper;
-import com.raunlo.checklist.persistence.mapper.TaskMapper;
+import com.raunlo.checklist.persistence.mapper.TaskDboMapper;
 import com.raunlo.checklist.resource.mapper.TaskFilterMapper;
+import com.raunlo.checklist.resource.mapper.TaskMapper;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.enterprise.context.Dependent;
@@ -56,8 +57,8 @@ public class ApplicationConfiguration {
 
     @Produces
     @Singleton
-    public TaskMapper taskDboMapper() {
-        return Mappers.getMapper(TaskMapper.class);
+    public TaskDboMapper taskDboMapper() {
+        return Mappers.getMapper(TaskDboMapper.class);
     }
 
     @Produces
@@ -69,5 +70,9 @@ public class ApplicationConfiguration {
     @Produces
     @Singleton
     public TaskFilterMapper taskFilterMapper() { return Mappers.getMapper(TaskFilterMapper.class); }
+
+    @Produces
+    @Singleton
+    public TaskMapper taskMapper() { return Mappers.getMapper(TaskMapper.class); }
 
 }
