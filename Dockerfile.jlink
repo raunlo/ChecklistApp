@@ -22,7 +22,7 @@ RUN mvn -Ddocker.build=true package -Pjlink-image -DskipTests -Djlink.image.addC
 
 FROM amazonlinux:2022
 WORKDIR /helidon
-COPY --from=built-image /helidon/target/checklist-jri ./
+COPY --from=built-image /helidon/target/baseItemList-jri ./
 ENTRYPOINT ["/bin/bash", "/helidon/bin/start"]
 EXPOSE 8080
 HEALTHCHECK --interval=120s --timeout=10s CMD curl --fail localhost:8080/health/live || kill 1

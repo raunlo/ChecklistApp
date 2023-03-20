@@ -1,11 +1,8 @@
 package com.raunlo.checklist.resource.v1;
 
-import com.raunlo.checklist.core.entity.Checklist;
+import com.raunlo.checklist.core.entity.list.ItemList;
 import com.raunlo.checklist.core.service.ChecklistService;
 import com.raunlo.checklist.resource.BaseResource;
-
-import java.net.URI;
-import java.util.concurrent.CompletionStage;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -22,13 +19,14 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
+import java.net.URI;
+import java.util.concurrent.CompletionStage;
 
 @Path("api/v1/checklist")
 @ApplicationScoped()
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class ChecklistResource implements BaseResource {
+public class ChecklistResource extends BaseResource {
 
     private final ChecklistService checklistService;
 
@@ -51,8 +49,8 @@ public class ChecklistResource implements BaseResource {
     }
 
     @POST()
-    public CompletionStage<Response> saveChecklist(@NotNull @Valid Checklist checklist, @Context UriInfo uriInfo) {
-        return checklistService.save(checklist)
+    public CompletionStage<Response> saveChecklist(@NotNull @Valid ItemList itemList, @Context UriInfo uriInfo) {
+        return checklistService.save(itemList)
                 .thenApply(savedChecklist -> {
                     final URI getResourceURI = uriInfo.getAbsolutePathBuilder().path(String.valueOf(savedChecklist.getId())).build();
                     return Response.created(getResourceURI).entity(savedChecklist).build();
@@ -61,9 +59,9 @@ public class ChecklistResource implements BaseResource {
 
     @PATCH()
     @Path("/{id}")
-    public CompletionStage<Response> updateTask(@NotNull @Valid Checklist checklist, @PathParam("id") Long id) {
-        checklist.setId(id);
-        return checklistService.update(checklist)
+    public CompletionStage<Response> updateTask(@NotNull @Valid ItemList itemList, @PathParam("id") Long id) {
+        itemList.setId(id);
+        return checklistService.update(itemList)
                 .thenApply(updatedChecklist -> Response.ok().entity(updatedChecklist).build());
     }
 

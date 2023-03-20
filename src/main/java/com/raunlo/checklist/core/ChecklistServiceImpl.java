@@ -1,11 +1,10 @@
 package com.raunlo.checklist.core;
 
-import com.raunlo.checklist.core.entity.Checklist;
+import com.raunlo.checklist.core.entity.list.ItemList;
 import com.raunlo.checklist.core.repository.ChecklistRepository;
 import com.raunlo.checklist.core.service.ChecklistService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -21,12 +20,12 @@ class ChecklistServiceImpl implements ChecklistService {
     }
 
     @Override
-    public CompletionStage<Checklist> save(Checklist entity) {
+    public CompletionStage<ItemList> save(ItemList entity) {
         return checklistRepository.save(entity);
     }
 
     @Override
-    public CompletionStage<Checklist> update(Checklist entity) {
+    public CompletionStage<ItemList> update(ItemList entity) {
         return checklistRepository.update(entity);
     }
 
@@ -36,12 +35,12 @@ class ChecklistServiceImpl implements ChecklistService {
     }
 
     @Override
-    public CompletionStage<Optional<Checklist>> findById(long id) {
+    public CompletionStage<Optional<ItemList>> findById(long id) {
         return checklistRepository.findById(id);
     }
 
     @Override
-    public CompletionStage<Collection<Checklist>> getAll() {
+    public CompletionStage<Collection<ItemList>> getAll() {
         return checklistRepository.getAll();
     }
 }

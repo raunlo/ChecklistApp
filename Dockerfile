@@ -18,9 +18,9 @@ FROM amazoncorretto:18-al2-jdk
 WORKDIR /helidon
 
 # Copy the binary built in the 1st stage
-COPY --from=build /helidon/target/checklist.jar ./
+COPY --from=build /helidon/target/baseItemList.jar ./
 COPY --from=build /helidon/target/libs ./libs
 
-CMD java --enable-preview -jar checklist.jar
+CMD java --enable-preview -jar baseItemList.jar
 
 EXPOSE 8080

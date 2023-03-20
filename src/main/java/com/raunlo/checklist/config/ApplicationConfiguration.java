@@ -1,22 +1,14 @@
 package com.raunlo.checklist.config;
 
-import com.raunlo.checklist.persistence.dao.ChecklistDao;
-import com.raunlo.checklist.persistence.dao.TaskDao;
-import com.raunlo.checklist.persistence.mapper.ChecklistMapper;
-import com.raunlo.checklist.persistence.mapper.TaskDboMapper;
-import com.raunlo.checklist.resource.mapper.TaskFilterMapper;
-import com.raunlo.checklist.resource.mapper.TaskMapper;
+import com.raunlo.checklist.persistence.dao.PostgreChecklistItemDao;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Singleton;
+import javax.sql.DataSource;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
-import org.mapstruct.factory.Mappers;
-
-import javax.sql.DataSource;
 
 @Dependent
 public class ApplicationConfiguration {
@@ -48,31 +40,11 @@ public class ApplicationConfiguration {
     }
 
     @Produces
-    public TaskDao taskDao(Jdbi jdbi) {
-        return jdbi.onDemand(TaskDao.class);
+    public PostgreChecklistItemDao taskDao(Jdbi jdbi) {
+        return jdbi.onDemand(PostgreChecklistItemDao.class);
     }
 
     @Produces
-    public ChecklistDao checklistDao(Jdbi jdbi) {return jdbi.onDemand(ChecklistDao.class);    }
-
-    @Produces
-    @Singleton
-    public TaskDboMapper taskDboMapper() {
-        return Mappers.getMapper(TaskDboMapper.class);
-    }
-
-    @Produces
-    @Singleton
-    public ChecklistMapper checklistDboMapper() {
-        return Mappers.getMapper(ChecklistMapper.class);
-    }
-
-    @Produces
-    @Singleton
-    public TaskFilterMapper taskFilterMapper() { return Mappers.getMapper(TaskFilterMapper.class); }
-
-    @Produces
-    @Singleton
-    public TaskMapper taskMapper() { return Mappers.getMapper(TaskMapper.class); }
-
+    public com.raunlo.baseItemList.persistence.dao.ChecklistDao checklistDao(Jdbi jdbi) {return jdbi.onDemand(
+      com.raunlo.baseItemList.persistence.dao.ChecklistDao.class);    }
 }

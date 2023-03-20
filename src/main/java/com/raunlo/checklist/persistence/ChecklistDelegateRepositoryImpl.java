@@ -1,13 +1,11 @@
 package com.raunlo.checklist.persistence;
 
-import com.raunlo.checklist.core.entity.Checklist;
+import com.raunlo.checklist.core.entity.list.ItemList;
 import com.raunlo.checklist.core.repository.ChecklistRepository;
 import com.raunlo.checklist.persistence.dao.ChecklistDao;
 import com.raunlo.checklist.persistence.mapper.ChecklistMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -26,16 +24,16 @@ class ChecklistDelegateRepositoryImpl implements ChecklistRepository {
     }
 
     @Override
-    public CompletionStage<Checklist> save(Checklist entity) {
+    public CompletionStage<ItemList> save(ItemList entity) {
         return CompletableFuture.supplyAsync(() ->
                         checklistDao.saveChecklist(entity.getName()))
-                .thenApply(id -> new Checklist()
+                .thenApply(id -> new ItemList()
                         .withId(id)
                         .withName(entity.getName()));
     }
 
     @Override
-    public CompletionStage<Checklist> update(Checklist entity) {
+    public CompletionStage<ItemList> update(ItemList entity) {
         return null;
     }
 
@@ -45,12 +43,12 @@ class ChecklistDelegateRepositoryImpl implements ChecklistRepository {
     }
 
     @Override
-    public CompletionStage<Optional<Checklist>> findById(long id) {
+    public CompletionStage<Optional<ItemList>> findById(long id) {
         return CompletableFuture.supplyAsync(Optional::empty);
     }
 
     @Override
-    public CompletionStage<Collection<Checklist>> getAll() {
+    public CompletionStage<Collection<ItemList>> getAll() {
         return CompletableFuture.supplyAsync(checklistDao::getAllChecklistDbos)
                 .thenApply(checklists -> checklists.stream()
                         .map(checklistMapper::map)
