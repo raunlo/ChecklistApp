@@ -1,12 +1,13 @@
 package com.raunlo.checklist.config;
 
-import com.raunlo.checklist.persistence.mapper.ChecklistMapper;
-import com.raunlo.checklist.persistence.mapper.TaskDboMapper;
+import com.raunlo.checklist.persistence.mapper.ChecklistDboMapper;
+import com.raunlo.checklist.persistence.mapper.ChecklistItemDboMapper;
+import com.raunlo.checklist.resource.mapper.ChecklistDtoMapper;
+import com.raunlo.checklist.resource.mapper.ChecklistItemDtoMapper;
 import com.raunlo.checklist.resource.mapper.ChecklistItemFilterMapper;
-import com.raunlo.checklist.resource.mapper.ChecklistItemMapper;
 import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Singleton;
-import jakarta.ws.rs.Produces;
 import org.mapstruct.factory.Mappers;
 
 @Dependent
@@ -14,22 +15,31 @@ public class MappersApplicationConfig {
 
   @Produces
   @Singleton
-  public TaskDboMapper taskDboMapper() {
-    return Mappers.getMapper(TaskDboMapper.class);
+  public ChecklistDtoMapper checklistDtoMapper() {
+    return Mappers.getMapper(ChecklistDtoMapper.class);
   }
 
   @Produces
   @Singleton
-  public ChecklistMapper checklistDboMapper() {
-    return Mappers.getMapper(ChecklistMapper.class);
+  public ChecklistItemDboMapper checklistItemDboMapper() {
+    return Mappers.getMapper(ChecklistItemDboMapper.class);
   }
 
   @Produces
   @Singleton
-  public ChecklistItemFilterMapper taskFilterMapper() { return Mappers.getMapper(
-    ChecklistItemFilterMapper.class); }
+  public ChecklistDboMapper checklistDboMapper() {
+    return Mappers.getMapper(ChecklistDboMapper.class);
+  }
 
   @Produces
   @Singleton
-  public ChecklistItemMapper taskMapper() { return Mappers.getMapper(ChecklistItemMapper.class); }
+  public ChecklistItemFilterMapper taskFilterMapper() {
+    return Mappers.getMapper(ChecklistItemFilterMapper.class);
+  }
+
+  @Produces
+  @Singleton
+  public ChecklistItemDtoMapper taskMapper() {
+    return Mappers.getMapper(ChecklistItemDtoMapper.class);
+  }
 }

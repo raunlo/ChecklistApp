@@ -3,7 +3,8 @@ package com.raunlo.checklist.core.processor;
 import static com.raunlo.checklist.core.entity.error.ErrorMessages.CHECKLIST_ITEM_IS_MISSING;
 import static com.raunlo.checklist.core.entity.error.ErrorType.NOT_FOUND_ERROR;
 
-import com.raunlo.checklist.core.entity.BaseItem;
+import com.raunlo.checklist.core.entity.Checklist;
+import com.raunlo.checklist.core.entity.ChecklistItem;
 import com.raunlo.checklist.core.entity.error.Error;
 import com.raunlo.checklist.core.entity.error.ErrorBuilder;
 import com.raunlo.checklist.core.entity.error.Errors;
@@ -20,12 +21,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 @Builder
-@AllArgsConstructor
-public record ChangeOrderProcessor<T extends BaseItem>(
+public record ChangeOrderProcessor<T extends ChecklistItem>(
   Supplier<CompletionStage<Optional<T>>> getItemOrderNumberSupplier, long newOrderNumber,
   Function<Integer, CompletionStage<List<T>>> findAllItemsInCurrentAndOldOrderNumberBounds,
   Function<List<T>, CompletionStage<Void>> updateOrderFunction) {
@@ -82,7 +81,7 @@ public record ChangeOrderProcessor<T extends BaseItem>(
     final boolean taskOrderNumberDecreased = oldOrderNumber < newOrderNumber;
 
     for (int i = 0; i < items.size(); i++) {
-      final BaseItem baseItem = items.get(i);
+      final ChecklistItem baseItem = items.get(i);
       if (i == 0 && taskOrderNumberDecreased) {
         result.add((T) baseItem.withOrder(newOrderNumber));
         continue;

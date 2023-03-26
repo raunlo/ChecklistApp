@@ -15,7 +15,7 @@ public final class EitherUtil {
           .get()
           .thenApply(
               value -> {
-                if (value.getClass().equals(Either.class)) {
+                if (value != null && value.getClass().equals(Either.class)) {
                   return either.map(__ -> ((Either<L, Output>) value).get());
                 } else {
                   return either.map(__ -> (Output) value);

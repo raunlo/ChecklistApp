@@ -1,5 +1,6 @@
 package com.raunlo.checklist.core.util;
 
+import io.vavr.control.Either;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -12,10 +13,14 @@ public final class CompletableFutureUtils {
 
   public static <T> CompletionStage<T> flatMapCompletableFuture(List<CompletionStage<T>> futures,
       BiFunction<T, T, T> mergeFunction) {
-    var mergedCompletableFuture = new CompletableFuture<T>();
+    CompletionStage<T> mergedCompletableFuture = null;
 
     for (CompletionStage<T> future : futures) {
-      mergedCompletableFuture = mergedCompletableFuture.thenCombine(future, mergeFunction::apply);
+      if (mergedCompletableFuture == null) {
+        mergedCompletableFuture = future;
+      } else {
+        mergedCompletableFuture = mergedCompletableFuture.thenCombine(future, mergeFunction);
+      }
     }
     return mergedCompletableFuture;
   }
