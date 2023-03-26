@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 @HelidonTest
 @Configuration(configSources = "application.yaml")
-public class BaseItemListFunctionalIT extends CommonChecklistOperations {
+public class ChecklistItemsFunctionalIT extends CommonChecklistOperations {
 
   @Test
   public void successfullyCreatesTask() {
