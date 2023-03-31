@@ -14,6 +14,5 @@ public interface ChecklistItemDboMapper {
     @Mapping(source = "baseItem.name", target = "taskName")
     @Mapping(source = "baseItem.completed", target = "taskCompleted")
 
-    //@Mapping(source = "checklistId", target = "checklistDbo.id")
     ChecklistItemsDbo map(ChecklistItem baseItem);
 }
