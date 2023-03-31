@@ -1,5 +1,10 @@
 package com.raunlo.checklist.resource.dto;
 
-public record ChecklistDto() {
+import io.soabase.recordbuilder.core.RecordBuilder;
+import java.util.Collection;
+
+@RecordBuilder
+public record ChecklistDto(String name, Long id,
+                           Collection<ChecklistItemDto> checklistItemDtos) implements Identifier {
 
 }

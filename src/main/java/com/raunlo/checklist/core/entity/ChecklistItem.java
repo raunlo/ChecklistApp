@@ -1,27 +1,26 @@
 package com.raunlo.checklist.core.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.raunlo.checklist.core.entity.error.ErrorMessages;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.Collection;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.With;
+import lombok.experimental.SuperBuilder;
 
-@With
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class Task {
-
-
+@With
+public class ChecklistItem {
 
     private Long id;
     @NotNull(message = "Name cannot be null")
-    @Size(max=900, message = Errors.TASK_NAME_IS_TOO_LONG)
+    @Size(max=900, message = ErrorMessages.ITEM_NAME_IS_TOO_LONG)
     private String name;
-    private String description;
+    private Long order;
     private boolean completed = false;
-    @JsonIgnore
-    private long order;
 }

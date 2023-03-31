@@ -10,7 +10,7 @@ import lombok.With;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChangeOrderRequest {
-    private long taskId;
-    private long newOrderNumber;
+    private int taskId;
+    private int newOrderNumber;
     private long checklistId;
 }

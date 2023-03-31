@@ -1,7 +1,6 @@
 package com.raunlo.checklist.core.repository;
 
 import com.raunlo.checklist.core.entity.Checklist;
-
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -16,4 +15,6 @@ public interface ChecklistRepository {
     CompletionStage<Optional<Checklist>> findById(final long id);
 
     CompletionStage<Collection<Checklist>> getAll();
+
+    CompletionStage<Boolean> exists(final long id);
 }

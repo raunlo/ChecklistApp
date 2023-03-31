@@ -1,11 +1,12 @@
 package com.raunlo.checklist.core;
 
 import com.raunlo.checklist.core.entity.Checklist;
+import com.raunlo.checklist.core.entity.error.Errors;
 import com.raunlo.checklist.core.repository.ChecklistRepository;
 import com.raunlo.checklist.core.service.ChecklistService;
+import io.vavr.control.Either;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -21,27 +22,32 @@ class ChecklistServiceImpl implements ChecklistService {
     }
 
     @Override
-    public CompletionStage<Checklist> save(Checklist entity) {
-        return checklistRepository.save(entity);
+    public CompletionStage<Either<Errors, Checklist>> save(Checklist entity) {
+        return checklistRepository.save(entity)
+            .thenApply(Either::right);
     }
 
     @Override
-    public CompletionStage<Checklist> update(Checklist entity) {
-        return checklistRepository.update(entity);
+    public CompletionStage<Either<Errors, Checklist>> update(Checklist entity) {
+        return checklistRepository.update(entity)
+            .thenApply(Either::right);
     }
 
     @Override
-    public CompletionStage<Void> delete(long id) {
-        return checklistRepository.delete(id);
+    public CompletionStage<Either<Errors, Void>> delete(Long id) {
+        return checklistRepository.delete(id)
+            .thenApply(Either::right);
     }
 
     @Override
-    public CompletionStage<Optional<Checklist>> findById(long id) {
-        return checklistRepository.findById(id);
+    public CompletionStage<Either<Errors, Optional<Checklist>>> findById(Long id) {
+        return checklistRepository.findById(id)
+            .thenApply(Either::right);
     }
 
     @Override
-    public CompletionStage<Collection<Checklist>> getAll() {
-        return checklistRepository.getAll();
+    public CompletionStage<Either<Errors, Collection<Checklist>>> getAll() {
+        return checklistRepository.getAll()
+            .thenApply(Either::right);
     }
 }

@@ -1,19 +1,20 @@
 package com.raunlo.checklist.validator;
 
-import com.raunlo.checklist.core.entity.Error;
-import com.raunlo.checklist.core.entity.ErrorType;
+import com.raunlo.checklist.core.entity.error.Error;
+import com.raunlo.checklist.core.entity.error.ErrorBuilder;
+import com.raunlo.checklist.core.entity.error.ErrorType;
+import com.raunlo.checklist.core.entity.error.Errors;
+import com.raunlo.checklist.core.entity.error.ErrorsBuilder;
 import com.raunlo.checklist.core.validator.BeanValidator;
-import com.raunlo.checklist.core.entity.ErrorBuilder;
 import io.vavr.control.Either;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class BeanBeanValidatorImpl implements BeanValidator {
@@ -26,15 +27,26 @@ public class BeanBeanValidatorImpl implements BeanValidator {
     }
 
     @Override
-    public <T> Either<CompletionStage<Error>, T> validate(T entity) {
-        final Set<ConstraintViolation<T>> validate = validator.validate(entity);
-        final Optional<Error> errorOpt = validate.stream()
-                .findFirst()
-                .map(violation -> ErrorBuilder.builder().errorMessage(violation.getMessage())
-                        .errorType(ErrorType.VALIDATION_ERROR)
-                        .build());
-        return errorOpt.map(error ->
-                        Either.<CompletionStage<Error>, T>left(CompletableFuture.completedFuture(error)))
-                .orElseGet(() -> Either.right(entity));
+    public <T> CompletionStage<Either<Errors, Void>> validate(T entity) {
+        final Set<ConstraintViolation<T>> validationResult = validator.validate(entity);
+        final Set<Error> errors = validationResult.stream()
+                .map(violation ->
+                        ErrorBuilder.builder()
+                                .errorMessage(violation.getMessage())
+                                .field(violation.getPropertyPath().toString())
+                                .build())
+                .collect(Collectors.toSet());
+
+        if (errors.isEmpty()) {
+            return CompletableFuture.completedStage(Either.right(null));
+        } else {
+            final var errorsEither = Either.<Errors, Void>left(
+                ErrorsBuilder.builder()
+                    .errorType(ErrorType.VALIDATION_ERROR)
+                    .errors(errors)
+                    .build());
+
+            return CompletableFuture.completedStage(errorsEither);
+        }
     }
 }
