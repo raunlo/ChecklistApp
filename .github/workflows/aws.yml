@@ -27,7 +27,7 @@
 name: Deploy to Amazon ECS
 
 on:
-  pull_requests:
+  pull_request:
     branches:
       - '*'
   push:
