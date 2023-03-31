@@ -1,9 +1,9 @@
 name: CI
 
 on:
+  pull_request:
   push:
-    branches:
-      - "*"
+    branches: main
 
 env:
   # AWS_REGION: MY_AWS_REGION                   # set this to your preferred AWS region, e.g. us-west-1
@@ -17,7 +17,6 @@ env:
 
 permissions:
   contents: read
-
 
 
 
