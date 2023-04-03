@@ -204,13 +204,4 @@ class ChecklistItemServiceImpl implements ChecklistItemService {
           return oldValue;
         });
   }
-
-
-  private CompletionStage<Void> updateDeletedTaskOrderLinks(long checklistId,
-      long taskId) {
-
-    return CompletableFuture.runAsync(() -> {
-      checklistItemRepository.removeTaskFromOrderLink(checklistId, taskId);
-    }, executorService);
-  }
 }
