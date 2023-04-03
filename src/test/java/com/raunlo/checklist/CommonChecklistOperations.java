@@ -49,7 +49,8 @@ public class CommonChecklistOperations {
                 assertThat(createdTask.id()).isNotNull();
                 assertThat(createdTask.name()).isEqualTo(task.name());
                 assertThat(createdTask.completed()).isEqualTo(task.completed());
-                assertThat(webTarget.getUri().toString() + BASE_PATH + checklistId + "/task/" + createdTask.id());
+                assertThat(webTarget.getUri().toString() + BASE_PATH + checklistId + "/task/" + createdTask.id())
+                    .isEqualTo(createTaskResponse.getHeaderString("Location").replace("127.0.0.1", "localhost"));
 
                 return createdTask;
         }

@@ -21,15 +21,15 @@ public class ChecklistItemsFunctionalIT extends CommonChecklistOperations {
 
   @Test
   public void successfullyCreatesTask() {
-    final ChecklistDto createdItemList = createChecklist(ChecklistDtoBuilder.builder()
+    final ChecklistDto checklistDto = createChecklist(ChecklistDtoBuilder.builder()
         .name("creates_task").build());
 
     final ChecklistItemDto checklistItemDto = ChecklistItemDtoBuilder.builder()
         .name("new task")
         .build();
-    final ChecklistItemDto createsTask = successfullyCreatesTask(createdItemList.id(),
+    final ChecklistItemDto createsTask = successfullyCreatesTask(checklistDto.id(),
         checklistItemDto);
-    final Response getTask = getTask(createdItemList.id(), createsTask.id());
+    final Response getTask = getTask(checklistDto.id(), createsTask.id());
     assertThat(getTask)
         .matches(response -> response.getStatus() == 200);
 

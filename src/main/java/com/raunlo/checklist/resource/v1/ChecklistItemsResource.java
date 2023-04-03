@@ -94,7 +94,7 @@ public class ChecklistItemsResource extends BaseResource {
   @POST()
   public CompletionStage<Response> saveTask(@NotNull @Valid ChecklistItemDto checklistItemDto,
       @PathParam("checklist_id") Long checklistId, @Context UriInfo uriInfo) {
-    final ChecklistItem checklistItem = checklistItemDtoMapper.map(checklistItemDto, checklistId);
+    final ChecklistItem checklistItem = checklistItemDtoMapper.map(checklistItemDto);
     final var savedItemResponse = checklistItemService.save(checklistId, checklistItem);
 
     return this.mapResponse(savedItemResponse,

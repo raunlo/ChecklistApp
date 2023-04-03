@@ -17,7 +17,10 @@ import jakarta.inject.Inject;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -27,7 +30,7 @@ class ChecklistItemServiceImpl implements ChecklistItemService {
 
   private final ChecklistItemRepository checklistItemRepository;
   private final BeanValidator validator;
-
+  private final ExecutorService executorService;
   private final ChecklistItemValidator checklistItemValidator;
 
   @Inject
@@ -38,69 +41,92 @@ class ChecklistItemServiceImpl implements ChecklistItemService {
     this.checklistItemRepository = checklistItemRepository;
     this.validator = validator;
     this.checklistItemValidator = checklistItemValidator;
+    this.executorService = Executors.newScheduledThreadPool(1);
   }
 
   @Override
   public CompletionStage<Either<Errors, ChecklistItem>> save(
       final Long checklistId, final ChecklistItem entity) {
 
-    final Supplier<CompletionStage<ChecklistItem>> saveChecklistItem =
+    final Supplier<ChecklistItem> saveChecklistItem =
         () -> checklistItemRepository.save(checklistId, entity);
 
     return validateEntityAndChecklist(checklistId, entity)
-        .thenCompose(
-            checklistItemEither ->
-                EitherUtil.mapCompletableStage(checklistItemEither, saveChecklistItem));
+        .thenCompose(validationResult -> CompletableFuture.supplyAsync(() ->
+                validationResult.map(__ -> saveChecklistItem.get()),
+            executorService))
+        .thenCompose(savedChecklistItemEither -> CompletableFuture.supplyAsync(() -> {
+          if (savedChecklistItemEither.isRight()) {
+            checklistItemRepository.updateSavedItemOrderLink(checklistId,
+                savedChecklistItemEither.get().getId());
+          }
+          return savedChecklistItemEither;
+        }))
+        .handle((checklistItemSavedEither, throwable) -> {
+          if (throwable != null) {
+            checklistItemRepository.delete(checklistId, checklistItemSavedEither.get().getId());
+            return checklistItemSavedEither;
+          }
+          return checklistItemSavedEither;
+        });
   }
 
   @Override
   public CompletionStage<Either<Errors, ChecklistItem>> update(
       final Long checklistId, final ChecklistItem entity) {
 
-    final Supplier<CompletionStage<ChecklistItem>> updateChecklistItem =
+    final Supplier<ChecklistItem> updateChecklistItem =
         () -> checklistItemRepository.update(checklistId, entity);
 
     return validateEntityAndChecklist(checklistId, entity)
-        .thenCompose(checklistItemEither ->
-            EitherUtil.mapCompletableStage(checklistItemEither, updateChecklistItem));
+        .thenCompose(validationResult -> CompletableFuture.supplyAsync(() ->
+                validationResult.map(__ -> updateChecklistItem.get()),
+            executorService));
   }
 
 
   @Override
   public CompletionStage<Either<Errors, Void>> delete(final Long checklistId, final Long id) {
 
-    final Supplier<CompletionStage<Void>> deleteFunction = () ->
-        checklistItemRepository.delete(checklistId, id);
-
     return checklistItemValidator.validateChecklistExistence(checklistId)
-        .thenCompose(
-            validationEither -> EitherUtil.mapCompletableStage(validationEither, deleteFunction));
+        .thenCompose(validationResult ->
+            CompletableFuture.supplyAsync(() -> {
+              if (validationResult.isRight()) {
+                checklistItemRepository.removeTaskFromOrderLink(checklistId, id);
+              }
+              return validationResult;
+            }, executorService))
+        .thenCompose(updateOldTaskLinkResult ->
+            CompletableFuture.supplyAsync(() -> {
+              if (updateOldTaskLinkResult.isRight()) {
+                checklistItemRepository.delete(checklistId, id);
+              }
+              return updateOldTaskLinkResult;
+            }, executorService));
   }
 
   @Override
   public CompletionStage<Either<Errors, Optional<ChecklistItem>>> findById(
       final Long checklistId, final Long id) {
 
-    final Supplier<CompletionStage<Optional<ChecklistItem>>> findChecklistItem = () ->
+    final Supplier<Optional<ChecklistItem>> findChecklistItem = () ->
         checklistItemRepository.findById(checklistId, id);
 
     return checklistItemValidator.validateChecklistExistence(checklistId)
-        .thenCompose(
-            validationEither ->
-                EitherUtil.mapCompletableStage(validationEither, findChecklistItem));
+        .thenCompose(validationEither -> CompletableFuture.supplyAsync(() ->
+            validationEither.map(__ -> findChecklistItem.get())));
   }
 
   @Override
   public CompletionStage<Either<Errors, Collection<ChecklistItem>>> getAll(
       final Long checklistId, final TaskPredefinedFilter predefineFilter) {
 
-    final Supplier<CompletionStage<Collection<ChecklistItem>>> getAllFunction = () ->
+    final Supplier<Collection<ChecklistItem>> getAllFunction = () ->
         checklistItemRepository.getAll(checklistId, predefineFilter);
 
     return checklistItemValidator.validateChecklistExistence(checklistId)
-        .thenCompose(
-            validationEither ->
-                EitherUtil.mapCompletableStage(validationEither, getAllFunction));
+        .thenCompose(validationEither -> CompletableFuture.supplyAsync(() ->
+            validationEither.map(__ -> getAllFunction.get())));
   }
 
   @Override
@@ -124,7 +150,8 @@ class ChecklistItemServiceImpl implements ChecklistItemService {
         });
 
     final Supplier<CompletionStage<Collection<ChecklistItem>>> saveAllChecklistItemsFunction =
-        () -> checklistItemRepository.saveAll(checklistId, checklistItems);
+        () -> CompletableFuture.supplyAsync(
+            () -> checklistItemRepository.saveAll(checklistId, checklistItems));
 
     return validationResult.thenCompose(validationResults ->
         EitherUtil.mapCompletableStage(validationResults, saveAllChecklistItemsFunction));
@@ -136,16 +163,20 @@ class ChecklistItemServiceImpl implements ChecklistItemService {
 
     final long checklistId = changeOrderRequest.getChecklistId();
     final Function<List<ChecklistItem>, CompletionStage<Void>> updateChecklistItemsFunction =
-        checklistItemRepository::changeOrder;
+        checklistItems -> CompletableFuture.runAsync(
+            () -> checklistItemRepository.changeOrder(checklistItems));
 
     final Supplier<CompletionStage<Optional<ChecklistItem>>> getItemOrderNumber =
-        () -> checklistItemRepository.findById(checklistId, changeOrderRequest.getTaskId());
+        () -> CompletableFuture.supplyAsync(() ->
+            checklistItemRepository.findById(checklistId, changeOrderRequest.getTaskId()));
 
     final Function<Integer, CompletionStage<List<ChecklistItem>>>
         findAllItemsInCurrentAndOldOrderNumberBounds =
         itemOrderNumber ->
-            checklistItemRepository.findAllTasksInOrderBounds(
-                checklistId, itemOrderNumber, changeOrderRequest.getNewOrderNumber());
+            CompletableFuture.supplyAsync(() ->
+                checklistItemRepository.findAllTasksInOrderBounds(
+                    checklistId, itemOrderNumber,
+                    changeOrderRequest.getNewOrderNumber()));
 
     final var changeOrderProcessor =
         ChangeOrderProcessor.<ChecklistItem>builder()
@@ -174,4 +205,12 @@ class ChecklistItemServiceImpl implements ChecklistItemService {
         });
   }
 
+
+  private CompletionStage<Void> updateDeletedTaskOrderLinks(long checklistId,
+      long taskId) {
+
+    return CompletableFuture.runAsync(() -> {
+      checklistItemRepository.removeTaskFromOrderLink(checklistId, taskId);
+    }, executorService);
+  }
 }

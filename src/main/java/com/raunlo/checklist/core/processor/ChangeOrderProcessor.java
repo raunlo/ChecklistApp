@@ -3,7 +3,6 @@ package com.raunlo.checklist.core.processor;
 import static com.raunlo.checklist.core.entity.error.ErrorMessages.CHECKLIST_ITEM_IS_MISSING;
 import static com.raunlo.checklist.core.entity.error.ErrorType.NOT_FOUND_ERROR;
 
-import com.raunlo.checklist.core.entity.Checklist;
 import com.raunlo.checklist.core.entity.ChecklistItem;
 import com.raunlo.checklist.core.entity.error.Error;
 import com.raunlo.checklist.core.entity.error.ErrorBuilder;
@@ -39,7 +38,7 @@ public record ChangeOrderProcessor<T extends ChecklistItem>(
 
   private CompletionStage<Either<Errors, Integer>> getItemOrderNumber() {
     return this.getItemOrderNumberSupplier.get().thenApply(
-      item -> item.map(checklistItem -> Either.<Errors, Integer>right(checklistItem.getOrder().intValue()))
+      item -> item.map(checklistItem -> Either.<Errors, Integer>right(checklistItem.getNextItemId().intValue()))
         .orElseGet(() -> {
           final Error error = ErrorBuilder.builder().errorMessage(CHECKLIST_ITEM_IS_MISSING)
             .build();
@@ -83,17 +82,17 @@ public record ChangeOrderProcessor<T extends ChecklistItem>(
     for (int i = 0; i < items.size(); i++) {
       final ChecklistItem baseItem = items.get(i);
       if (i == 0 && taskOrderNumberDecreased) {
-        result.add((T) baseItem.withOrder(newOrderNumber));
+        result.add((T) baseItem.withNextItemId(newOrderNumber));
         continue;
       }
 
       if (i == items.size() - 1 && !taskOrderNumberDecreased) {
-        result.add((T) baseItem.withOrder(newOrderNumber));
+        result.add((T) baseItem.withNextItemId(newOrderNumber));
         continue;
       }
       final long newElementOrder =
-        taskOrderNumberDecreased ? baseItem.getOrder() - 1 : baseItem.getOrder() + 1;
-      result.add((T) baseItem.withOrder(newElementOrder));
+        taskOrderNumberDecreased ? baseItem.getNextItemId() - 1 : baseItem.getNextItemId() + 1;
+      result.add((T) baseItem.withNextItemId(newElementOrder));
     }
 
     return Either.right(result);

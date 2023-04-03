@@ -17,55 +17,89 @@ import org.jdbi.v3.sqlobject.transaction.Transaction;
 @RegisterConstructorMapper(ChecklistItemsDbo.class)
 public interface PostgresChecklistItemDao {
 
-    @SqlQuery("""
-                            SELECT task_id, task_name, task_completed, order_number
-                            FROM TASK
-                            WHERE checklist_id = :checklistId AND
-                                (:filterType IS NULL OR
+  @SqlQuery("""
+      WITH RECURSIVE checklist_items as (
+          SELECT task_id, TASK_NAME, TASK_COMPLETED, NEXT_TASK, 0 AS order_number
+          FROM TASK
+          WHERE CHECKLIST_ID = :checklistId and NEXT_TASK is null
+          
+          UNION ALL
+          
+          SELECT t.TASK_ID, t.TASK_NAME, t.TASK_COMPLETED, t.NEXT_TASK, order_number + 1
+          from task as t, checklist_items as c
+          where checklist_id = :checklistId and t.next_task = c.task_id
+      )
+      SELECT task_id, TASK_NAME, TASK_COMPLETED, NEXT_TASK FROM checklist_items
+      where (:filterType IS NULL OR
                                 CASE :filterType
                                     WHEN 'TODO' THEN task_completed = false
                                     WHEN 'COMPLETED' then task_completed = true
                                 END)
-                            ORDER BY order_number
+      ORDER BY order_number desc
+      """)
+  List<ChecklistItemsDbo> getAllTasks(@Bind("checklistId") Long checklistId,
+      @Bind("filterType") TaskPredefinedFilter filterType);
 
-            """)
-    List<ChecklistItemsDbo> getAllTasks(@Bind("checklistId") Long checklistId, @Bind("filterType") TaskPredefinedFilter filterType);
+
+  @SqlQuery("""
+      SELECT task_id, task_name, task_completed, next_task
+      FROM task
+      WHERE checklist_id = :checklistId AND task_id = :taskId
+       """)
+  Optional<ChecklistItemsDbo> findById(@Bind("checklistId") Long checklistId,
+      @Bind("taskId") Long taskId);
+
+  @Transaction(TransactionIsolationLevel.SERIALIZABLE)
+  @SqlUpdate("DELETE FROM TASK WHERE task_id = :taskId AND checklist_id = :checklistId")
+  void deleteById(@Bind("checklistId") Long checklistId, @Bind("taskId") Long taskId);
+
+  @Transaction(TransactionIsolationLevel.SERIALIZABLE)
+  @SqlUpdate("""
+      UPDATE TASK SET task_name = :taskName, task_completed = :taskCompleted
+       WHERE checklist_id = :checklistId AND task_id = :taskId""")
+  void updateTask(@Bind("checklistId") Long checklistId, @Bind("taskId") Long taskId,
+      @Bind("taskCompleted") Boolean taskCompleted, @Bind("taskName") String taskName);
+
+  @Transaction(TransactionIsolationLevel.SERIALIZABLE)
+  @SqlUpdate("""
+      INSERT INTO TASK(task_id, task_name, task_completed, checklist_id)
+      VALUES(nextval('checklist_sequence'), :checklistItem.taskName,
+       :checklistItem.taskCompleted, :checklistId);
+      """)
+  @GetGeneratedKeys
+  ChecklistItemsDbo insert(@BindMethods("checklistItem") ChecklistItemsDbo checklistItemsDbo,
+      @Bind("checklistId") Long checklistId);
+
+  @Transaction(TransactionIsolationLevel.SERIALIZABLE)
+  @SqlBatch("UPDATE task SET next_task = :task.order where task_id = :task.id")
+  void updateTasksOrder(@BindMethods("task") List<ChecklistItemsDbo> checklistItemsDbos);
+
+  @Transaction(TransactionIsolationLevel.SERIALIZABLE)
+  @SqlBatch("""
+      INSERT INTO task(TASK_ID, TASK_NAME, CHECKLIST_ID, task_completed)
+       VALUES (nextval('checklist_sequence'), :task.taskName, :checklistId, :task.taskCompleted)
+      """)
+  @GetGeneratedKeys()
+  List<ChecklistItemsDbo> saveAll(@BindMethods("task") List<ChecklistItemsDbo> checklistItemsDbos,
+      @Bind("checklistId") Long checklistId);
 
 
-    @SqlQuery("SELECT task_id, task_name, task_completed, order_number FROM task WHERE checklist_id = :checklistId AND task_id = :taskId")
-    Optional<ChecklistItemsDbo> findById(@Bind("checklistId") Long checklistId, @Bind("taskId") Long taskId);
+  @SqlQuery("")
+  List<ChecklistItemsDbo> findTasksInOrderBounds(@Bind("checklistId") long checklistId,
+      @Bind("lowerBound") long lowerBound, @Bind("upperBound") long upperBound);
 
-    @Transaction(TransactionIsolationLevel.SERIALIZABLE)
-    @SqlUpdate("DELETE FROM TASK WHERE checklist_id = :checklistId AND task_id = :taskId")
-    void deleteById(@Bind("checklistId") Long checklistId, @Bind("taskId") Long taskId);
+  @SqlUpdate("""
+      UPDATE TASK
+       SET NEXT_TASK = (SELECT next_task FROM TASK where checklist_id = :checklistId and task_id = :taskId)
+       WHERE checklist_id = :checklistId AND next_task = :taskId
+      """)
+  void removeTaskFromOrderLink(@Bind("checklistId") long checklistId, @Bind("taskId") long taskId);
 
-    @Transaction(TransactionIsolationLevel.SERIALIZABLE)
-    @SqlUpdate("UPDATE TASK SET task_name = :taskName, task_completed = :taskCompleted WHERE checklist_id = :checklistId AND task_id = :taskId")
-    void updateTask(@Bind("checklistId") Long checklistId, @Bind("taskId") Long taskId, @Bind("taskCompleted") Boolean taskCompleted, @Bind("taskName") String taskName);
 
-    @Transaction(TransactionIsolationLevel.SERIALIZABLE)
-    @SqlUpdate("""
-            INSERT INTO TASK(task_id, task_name, task_completed, checklist_id, order_number)
-            VALUES(nextval('checklist_sequence'), :taskName, :taskCompleted, :checklistId, (SELECT COUNT(*) + 1 FROM TASK))
-            """)
-    @GetGeneratedKeys
-    ChecklistItemsDbo insert(@Bind("taskName") String taskName, @Bind("taskCompleted") boolean taskCompleted, @Bind("checklistId") Long checklistId);
-
-    @Transaction(TransactionIsolationLevel.SERIALIZABLE)
-    @SqlBatch("UPDATE task SET order_number = :task.order where task_id = :task.id")
-    void updateTasksOrder(@BindMethods("task") List<ChecklistItemsDbo> checklistItemsDbos);
-
-    @Transaction(TransactionIsolationLevel.SERIALIZABLE)
-    @SqlBatch("""
-            INSERT INTO task(TASK_ID, TASK_NAME, CHECKLIST_ID, task_completed) VALUES (nextval('checklist_sequence'), :task.taskName, :checklistId, :task.taskCompleted)
-            """)
-    @GetGeneratedKeys()
-    List<ChecklistItemsDbo> saveAll(@BindMethods("task") List<ChecklistItemsDbo> checklistItemsDbos, @Bind("checklistId") Long checklistId);
-
-    @SqlQuery("""
-            SELECT task_id, task_name, task_completed, order_number FROM task
-                where order_number >= :lowerBound AND order_number <= :upperBound AND checklist_id = :checklistId
-                ORDER BY order_number
-                """)
-    List<ChecklistItemsDbo> findTasksInOrderBounds(@Bind("checklistId") long checklistId, @Bind("lowerBound") long lowerBound, @Bind("upperBound") long upperBound);
+  @SqlUpdate("""
+      UPDATE task SET next_task = :checklistItemId
+       WHERE checklist_id = :checklistId AND next_task IS NULL and task_id <> :checklistItemId
+          """)
+  void addNewlySavedChecklistItemOrderLink(@Bind("checklistId") long checklistId,
+      @Bind("checklistItemId") long checklistItemId);
 }
