@@ -1,6 +1,6 @@
 
 # 1st stage, build the app
-FROM maven:3.8.6-amazoncorretto-19 as base
+FROM maven:3.9-amazoncorretto-19 as base
 
 WORKDIR /helidon
 
@@ -12,7 +12,7 @@ ADD pom.xml .
 # Do the Maven build to create the custom Java Runtime Image
 # Incremental docker builds will resume here when you change sources
 ADD src src
-RUN mvn install
+RUN mvn install -Dmaven.test.skip=true
 
 FROM base as built-image
 

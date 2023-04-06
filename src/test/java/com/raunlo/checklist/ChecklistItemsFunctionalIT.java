@@ -42,15 +42,15 @@ public class ChecklistItemsFunctionalIT extends CommonChecklistOperations {
 
   @Test
   public void successfullyDeleteTask() {
-    final ChecklistDto createdItemList = createChecklist(
+    final ChecklistDto checklistDto = createChecklist(
         ChecklistDtoBuilder.builder().name("deletes_task").build());
-    final ChecklistItemDto baseItemDto = ChecklistItemDtoBuilder.builder()
+    final ChecklistItemDto checklistITemDto = ChecklistItemDtoBuilder.builder()
         .name("new task")
         .build();
-    final ChecklistItemDto createdTask = successfullyCreatesTask(createdItemList.id(),
-        baseItemDto);
-    deleteTask(createdItemList.id(), createdTask.id());
-    assertThat(getTask(createdItemList.id(), createdTask.id()))
+    final ChecklistItemDto createdTask = successfullyCreatesTask(checklistDto.id(),
+        checklistITemDto);
+    deleteTask(checklistDto.id(), createdTask.id());
+    assertThat(getTask(checklistDto.id(), createdTask.id()))
         .matches(response -> response.getStatus() == 404);
   }
 

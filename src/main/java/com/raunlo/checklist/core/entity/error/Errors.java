@@ -13,4 +13,11 @@ public record Errors(ErrorType errorType, Set<Error> errors) {
         .build();
   }
 
+  public static Errors genericError(Throwable throwable) {
+    return ErrorsBuilder.builder()
+        .errorType(ErrorType.INTERNAL_SERVER_ERROR)
+        .errors(Set.of(ErrorBuilder.builder().errorMessage(throwable.getMessage()).build()))
+        .build();
+  }
+
 }
