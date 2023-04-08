@@ -1,4 +1,6 @@
 quarkus:
   http:
     cors:
-      origins: "*"
+      origins: *
+      headers: Access-Control-Allow-Origin
+      access-control-allow-credentials: true
