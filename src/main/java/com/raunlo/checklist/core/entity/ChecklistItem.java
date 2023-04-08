@@ -1,9 +1,8 @@
 package com.raunlo.checklist.core.entity;
 
 import com.raunlo.checklist.core.entity.error.ErrorMessages;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import java.util.Collection;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +20,6 @@ public class ChecklistItem {
     @NotNull(message = "Name cannot be null")
     @Size(max=900, message = ErrorMessages.ITEM_NAME_IS_TOO_LONG)
     private String name;
-    private Long order;
+    private Long nextItemId;
     private boolean completed = false;
 }

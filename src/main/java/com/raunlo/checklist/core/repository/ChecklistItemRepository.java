@@ -5,6 +5,7 @@ import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public interface ChecklistItemRepository {
@@ -20,11 +21,16 @@ public interface ChecklistItemRepository {
   CompletionStage<Collection<ChecklistItem>> getAll(final long checklistId,
       final TaskPredefinedFilter predefinedFilter);
 
-  CompletionStage<Void> changeOrder(final List<ChecklistItem> items);
-
-  CompletionStage<List<ChecklistItem>> findAllTasksInOrderBounds(final long checklistId,
-      final int taskOrderNumber, final int newOrderNumber);
-
   CompletionStage<Collection<ChecklistItem>> saveAll(long checklistId,
       final List<ChecklistItem> items);
+
+  CompletionStage<Void> removeTaskFromOrderLink(long checklistId, long taskId);
+
+  CompletionStage<Void> updateSavedItemOrderLink(long checklistId, long taskId);
+
+  CompletableFuture<Void> updateChecklistItemOrderLink(long checklistId, long checklistITemId,
+      Long newNexChecklistItemId);
+
+  CompletionStage<Optional<Long>> findNewNextItemIdByOrderAndChecklistItemId(long checklistId,
+      long orderNumber, long checklistItemId);
 }

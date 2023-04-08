@@ -7,8 +7,8 @@ import com.raunlo.checklist.resource.dto.error.ClientErrorDtoBuilder;
 import com.raunlo.checklist.resource.dto.error.ClientErrorsDto;
 import com.raunlo.checklist.resource.dto.error.ClientErrorsDtoBuilder;
 import io.vavr.control.Either;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
@@ -19,7 +19,8 @@ import java.util.stream.Collectors;
 public abstract class BaseResource {
 
   private static final Map<ErrorType, Integer> ERROR_STATUS_CODE_MAPPING = Map.of(
-      ErrorType.VALIDATION_ERROR, 400
+      ErrorType.VALIDATION_ERROR, 400,
+      ErrorType.NOT_FOUND_ERROR, 404
   );
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")

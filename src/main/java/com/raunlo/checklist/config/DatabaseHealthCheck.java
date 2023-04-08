@@ -1,7 +1,7 @@
 package com.raunlo.checklist.config;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -9,9 +9,10 @@ import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
-import org.eclipse.microprofile.health.Liveness;
+import org.eclipse.microprofile.health.Readiness;
 
-@Liveness
+
+@Readiness
 @ApplicationScoped
 @Slf4j
 public class DatabaseHealthCheck implements HealthCheck {

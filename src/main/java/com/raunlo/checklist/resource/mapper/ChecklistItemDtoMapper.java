@@ -9,10 +9,13 @@ import org.mapstruct.Mapping;
 @Mapper
 public interface ChecklistItemDtoMapper {
 
-  @Mapping(target = "order", ignore = true)
-  @Mapping(target = "id", source = "checklistId")
-  ChecklistItem map(ChecklistItemDto checklistItemDto, Long checklistId);
+  @Mapping(target = "nextItemId", ignore = true)
+  @Mapping(target = "id", source = "id")
+  ChecklistItem map(ChecklistItemDto checklistItemDto, Long id);
 
+  default ChecklistItem map(ChecklistItemDto checklistItemDto) {
+    return map(checklistItemDto, null);
+  }
 
 
   @Mapping(target = "description", ignore = true)
