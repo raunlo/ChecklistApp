@@ -92,6 +92,6 @@ ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss
 ENV JAVA_APP_JAR="/app/quarkus-run.jar"
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar $JAVA_APP_JAR"]
-HEALTHCHECK --interval=120s --timeout=10s CMD curl --fail localhost:8080/health/live || kill 1
+HEALTHCHECK --interval=120s --timeout=10s CMD curl --fail localhost:8080/q/health/ready || kill 1
 
 
