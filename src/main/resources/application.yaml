@@ -1,6 +1,0 @@
-quarkus:
-  http:
-    cors:
-      origins: *
-      headers: Access-Control-Allow-Origin
-      access-control-allow-credentials: true
