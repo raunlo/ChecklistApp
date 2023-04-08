@@ -85,7 +85,7 @@ jobs:
           # push it to ECR so that it can
           # be deployed to ECS.
           
-          mvn clean package  -Dquarkus.container-image.build=true -Dquarkus.container-image.name=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          mvn clean package  -Dquarkus.container-image.build=true  -Dquarkus.container-image.group=$ECR_REGISTRY  -Dquarkus.container-image.name=$ECR_REPOSITORY -Dquarkus.container-image.tag=$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
       - name: Download task definition
