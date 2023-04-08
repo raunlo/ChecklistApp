@@ -5,10 +5,4 @@ server:
     http2:
       enable: true
       max-content-length: 16384
-quarkus:
-  http:
-    cors:
-      origins: *
-      headers: accept, authorization, content-type, x-requested-with
-      methods: *
 
