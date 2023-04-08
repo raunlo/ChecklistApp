@@ -7,10 +7,10 @@ import com.raunlo.checklist.core.entity.error.Errors;
 import com.raunlo.checklist.core.entity.error.ErrorsBuilder;
 import com.raunlo.checklist.core.validator.BeanValidator;
 import io.vavr.control.Either;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -22,7 +22,7 @@ public class BeanBeanValidatorImpl implements BeanValidator {
     private final Validator validator;
 
     @Inject
-    public BeanBeanValidatorImpl(jakarta.validation.Validator validatorBean) {
+    public BeanBeanValidatorImpl(javax.validation.Validator validatorBean) {
         this.validator = validatorBean;
     }
 

@@ -5,9 +5,9 @@ import com.raunlo.checklist.persistence.mapper.ChecklistItemDboMapper;
 import com.raunlo.checklist.resource.mapper.ChecklistDtoMapper;
 import com.raunlo.checklist.resource.mapper.ChecklistItemDtoMapper;
 import com.raunlo.checklist.resource.mapper.ChecklistItemFilterMapper;
-import jakarta.enterprise.context.Dependent;
-import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Singleton;
+import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Produces;
+import javax.inject.Singleton;
 import org.mapstruct.factory.Mappers;
 
 @Dependent

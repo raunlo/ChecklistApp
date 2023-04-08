@@ -2,8 +2,6 @@ package com.raunlo.checklist.core.repository;
 
 import com.raunlo.checklist.core.entity.ChecklistItem;
 import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
-import com.raunlo.checklist.core.entity.error.Errors;
-import io.vavr.control.Either;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -23,15 +21,16 @@ public interface ChecklistItemRepository {
   CompletionStage<Collection<ChecklistItem>> getAll(final long checklistId,
       final TaskPredefinedFilter predefinedFilter);
 
-  void changeOrder(final List<ChecklistItem> items);
-
-  List<ChecklistItem> findAllTasksInOrderBounds(final long checklistId,
-      final int taskOrderNumber, final int newOrderNumber);
-
   CompletionStage<Collection<ChecklistItem>> saveAll(long checklistId,
       final List<ChecklistItem> items);
 
   CompletionStage<Void> removeTaskFromOrderLink(long checklistId, long taskId);
 
   CompletionStage<Void> updateSavedItemOrderLink(long checklistId, long taskId);
+
+  CompletableFuture<Void> updateChecklistItemOrderLink(long checklistId, long checklistITemId,
+      Long newNexChecklistItemId);
+
+  CompletionStage<Optional<Long>> findNewNextItemIdByOrderAndChecklistItemId(long checklistId,
+      long orderNumber, long checklistItemId);
 }

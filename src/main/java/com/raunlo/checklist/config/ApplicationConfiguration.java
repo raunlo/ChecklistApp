@@ -1,13 +1,12 @@
 package com.raunlo.checklist.config;
 
-import com.raunlo.checklist.persistence.dao.ChecklistDao;
 import com.raunlo.checklist.persistence.dao.PostgresChecklistItemDao;
 import com.raunlo.checklist.persistence.dao.PostgresChecklistDao;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import jakarta.enterprise.context.Dependent;
-import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Singleton;
+import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Produces;
+import javax.inject.Singleton;
 import javax.sql.DataSource;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jdbi.v3.core.Jdbi;

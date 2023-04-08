@@ -23,8 +23,8 @@ public interface PostgresChecklistDao {
 
   @UseRowReducer(ChecklistRowReducer.class)
   @SqlQuery("""
-              SELECT c.checklist_id as checklist_id, c.checklist_name as checklist_name, t.task_id as task_id,
-              t.task_completed as task_completed, t.order_number as order_number
+              SELECT c.checklist_id as checklist_id, c.checklist_name as checklist_name, t.task_id as task_id, t.task_name,
+              t.task_completed as task_completed, t.next_task
               FROM checklist as c
               LEFT JOIN TASK t on c.checklist_id = t.checklist_id
               ORDER BY checklist_name

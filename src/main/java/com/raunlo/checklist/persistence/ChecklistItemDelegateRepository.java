@@ -5,9 +5,6 @@ import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
 import com.raunlo.checklist.core.repository.ChecklistItemRepository;
 import com.raunlo.checklist.persistence.dao.PostgresChecklistItemDao;
 import com.raunlo.checklist.persistence.mapper.ChecklistItemDboMapper;
-import com.raunlo.checklist.persistence.model.ChecklistItemsDbo;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +12,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 @ApplicationScoped
 class ChecklistItemDelegateRepository implements ChecklistItemRepository {
@@ -22,7 +21,7 @@ class ChecklistItemDelegateRepository implements ChecklistItemRepository {
   private final PostgresChecklistItemDao postgresChecklistItemDao;
   private final ChecklistItemDboMapper checklistItemDboMapper;
 
-  private ExecutorService executorService;
+  private final ExecutorService executorService;
 
 
   @Inject()
@@ -31,7 +30,7 @@ class ChecklistItemDelegateRepository implements ChecklistItemRepository {
 
     this.postgresChecklistItemDao = postgresChecklistItemDao;
     this.checklistItemDboMapper = checklistItemDboMapper;
-    this.executorService = Executors.newVirtualThreadPerTaskExecutor();
+    this.executorService = Executors.newScheduledThreadPool(1);
   }
 
 
@@ -79,27 +78,6 @@ class ChecklistItemDelegateRepository implements ChecklistItemRepository {
   }
 
   @Override
-  public void changeOrder(List<ChecklistItem> checklistItems) {
-
-    final List<ChecklistItemsDbo> checklistItemsDbos = checklistItems
-        .stream()
-        .map(checklistItemDboMapper::map)
-        .toList();
-    postgresChecklistItemDao.updateTasksOrder(checklistItemsDbos);
-  }
-
-  @Override
-  public List<ChecklistItem> findAllTasksInOrderBounds(long checklistId,
-      int taskOrderNumber, int newOrderNumber) {
-    final long upperBound = Math.max(newOrderNumber, taskOrderNumber);
-    final long lowerBound = Math.min(newOrderNumber, taskOrderNumber);
-    return postgresChecklistItemDao.findTasksInOrderBounds(checklistId, lowerBound, upperBound)
-        .stream()
-        .map(checklistItemDboMapper::map)
-        .toList();
-  }
-
-  @Override
   public CompletionStage<Collection<ChecklistItem>> saveAll(long checklistId,
       List<ChecklistItem> checklistItems) {
     return CompletableFuture.supplyAsync(() -> {
@@ -110,7 +88,8 @@ class ChecklistItemDelegateRepository implements ChecklistItemRepository {
           return postgresChecklistItemDao.saveAll(itemsDbos, checklistId);
         })
         .thenApply(
-            savedChecklistItems -> savedChecklistItems.stream().map(checklistItemDboMapper::map).toList());
+            savedChecklistItems -> savedChecklistItems.stream().map(checklistItemDboMapper::map)
+                .toList());
   }
 
   @Override
@@ -124,5 +103,24 @@ class ChecklistItemDelegateRepository implements ChecklistItemRepository {
     return CompletableFuture.runAsync(() ->
             postgresChecklistItemDao.addNewlySavedChecklistItemOrderLink(checklistId, taskId),
         executorService);
+  }
+
+  @Override
+  public CompletableFuture<Void> updateChecklistItemOrderLink(long checklistId,
+      long checklistItemId,
+      Long newNextChecklistItemId) {
+    return CompletableFuture.runAsync(() ->
+        postgresChecklistItemDao.updateChecklistItemOrder(checklistId, checklistItemId,
+            newNextChecklistItemId), executorService);
+  }
+
+
+  @Override
+  public CompletionStage<Optional<Long>> findNewNextItemIdByOrderAndChecklistItemId(
+      long checklistId,
+      long orderNumber, long checklistItemId) {
+    return CompletableFuture.supplyAsync(
+        () -> postgresChecklistItemDao.findChecklistItemByOrder(checklistId,
+            orderNumber, checklistItemId), executorService);
   }
 }

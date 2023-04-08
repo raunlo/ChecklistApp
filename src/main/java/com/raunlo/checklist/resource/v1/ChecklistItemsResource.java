@@ -2,6 +2,7 @@ package com.raunlo.checklist.resource.v1;
 
 import com.google.common.base.Enums;
 import com.raunlo.checklist.core.entity.ChangeOrderRequest;
+import com.raunlo.checklist.core.entity.ChangeOrderRequestBuilder;
 import com.raunlo.checklist.core.entity.ChecklistItem;
 import com.raunlo.checklist.core.service.ChecklistItemService;
 import com.raunlo.checklist.resource.BaseResource;
@@ -12,34 +13,32 @@ import com.raunlo.checklist.resource.dto.error.ClientErrorsDto;
 import com.raunlo.checklist.resource.dto.error.ClientErrorsDtoBuilder;
 import com.raunlo.checklist.resource.mapper.ChecklistItemDtoMapper;
 import com.raunlo.checklist.resource.mapper.ChecklistItemFilterMapper;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PATCH;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.PATCH;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 @Path("api/v1/checklist/{checklist_id}/task")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@ApplicationScoped
 public class ChecklistItemsResource extends BaseResource {
 
   private final ChecklistItemService checklistItemService;
@@ -125,12 +124,14 @@ public class ChecklistItemsResource extends BaseResource {
 
   @PATCH
   @Path("/change-order")
-  public CompletionStage<Response> changeTaskOrder(ChangeOrderRequest changeOrderRequest,
+  public CompletionStage<Response> changeTaskOrder(@NotNull ChangeOrderRequest changeOrderRequest,
       @PathParam("checklist_id") Long checklistId) {
-    changeOrderRequest.setChecklistId(checklistId);
 
-    final var response = checklistItemService.changeOrder(changeOrderRequest);
-    return mapResponse(response, __ -> this.ok((Object) null));
+    final var response = checklistItemService.changeOrder(
+        ChangeOrderRequestBuilder.builder(changeOrderRequest)
+            .checklistId(checklistId)
+            .build());
+    return mapResponse(response, __ -> this.noContent());
   }
 
   @POST
@@ -146,6 +147,6 @@ public class ChecklistItemsResource extends BaseResource {
     final var savedItemsResponse = checklistItemService.saveAll(checklistItems, checklistId);
 
     return this.mapResponse(savedItemsResponse,
-        savedItems -> this.ok(checklistItemDtoMapper.map(savedItems)));
+        savedItems -> Response.status(201).entity(checklistItemDtoMapper.map(savedItems)).build());
   }
 }

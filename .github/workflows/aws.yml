@@ -30,11 +30,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Setup java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 19
+          distribution: 'correto'
+          architecture: x64
+
 
       - name: run tests
         id: run_tests
         run: |
-          docker-compose -f "docker-compose.test.yml" build && docker-compose -f "docker-compose.test.yml" run --rm it-test-runner bash -c "mvn test-compile failsafe:integration-test failsafe:verify"
+          mvn clean install -Dquarkus.container-image.build=true -DskipITs=false   
+          
 
   deploy:
     name: Deploy
@@ -46,6 +54,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+
+      - name: Setup java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 19
+          distribution: 'correto'
+          architecture: x64
+
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -67,7 +84,8 @@ jobs:
           # Build a docker container and
           # push it to ECR so that it can
           # be deployed to ECS.
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f Dockerfile.jlink .
+          
+          mvn clean package  -Dquarkus.container-image.build=true -Dquarkus.container-image.name= $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
       - name: Download task definition

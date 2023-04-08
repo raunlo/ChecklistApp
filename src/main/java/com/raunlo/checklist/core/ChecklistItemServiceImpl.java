@@ -13,14 +13,15 @@ import com.raunlo.checklist.core.util.EitherUtil;
 import com.raunlo.checklist.core.validator.BeanValidator;
 import com.raunlo.checklist.core.validator.ChecklistItemValidator;
 import io.vavr.control.Either;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 import java.util.stream.Stream;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 @ApplicationScoped
 class ChecklistItemServiceImpl implements ChecklistItemService {
@@ -156,35 +157,20 @@ class ChecklistItemServiceImpl implements ChecklistItemService {
   @Override
   public CompletionStage<Either<Errors, Void>> changeOrder(
       final ChangeOrderRequest changeOrderRequest) {
+    final var checklistId = changeOrderRequest.checklistId();
+    final var checklistItemId = changeOrderRequest.checklistItemId();
 
-//    final long checklistId = changeOrderRequest.getChecklistId();
-//    final Function<List<ChecklistItem>, CompletionStage<Void>> updateChecklistItemsFunction =
-//        checklistItems -> CompletableFuture.runAsync(
-//            () -> checklistItemRepository.changeOrder(checklistItems));
-//
-//    final Supplier<CompletionStage<Optional<ChecklistItem>>> getItemOrderNumber =
-//        () -> CompletableFuture.supplyAsync(() ->
-//            checklistItemRepository.findById(checklistId, changeOrderRequest.getTaskId()));
-//
-//    final Function<Integer, CompletionStage<List<ChecklistItem>>>
-//        findAllItemsInCurrentAndOldOrderNumberBounds =
-//        itemOrderNumber ->
-//            CompletableFuture.supplyAsync(() ->
-//                checklistItemRepository.findAllTasksInOrderBounds(
-//                    checklistId, itemOrderNumber,
-//                    changeOrderRequest.getNewOrderNumber()));
-//
-//    final var changeOrderProcessor =
-//        ChangeOrderProcessor.builder()
-//            .newOrderNumber(changeOrderRequest.getNewOrderNumber())
-//            .updateOrderFunction(updateChecklistItemsFunction)
-//            .getItemOrderNumberSupplier(getItemOrderNumber)
-//            .findAllItemsInCurrentAndOldOrderNumberBounds(
-//                findAllItemsInCurrentAndOldOrderNumberBounds)
-//            .build();
-//
-//    return changeOrderProcessor.changeOrder();
-    return CompletableFuture.completedFuture(Either.right(null));
+    Function<Long, CompletionStage<Void>> updateItemOrder = newNextItemId ->
+        checklistItemRepository.updateChecklistItemOrderLink(checklistId, checklistItemId,
+            newNextItemId);
+
+    return checklistItemRepository.findNewNextItemIdByOrderAndChecklistItemId(checklistId,
+            changeOrderRequest.newOrderNumber(), checklistItemId)
+
+        .thenApply(newNextItemId -> Either.<Errors, Long>right(newNextItemId.orElse(null)))
+
+        .thenCompose(newNextItemIdEither ->
+            EitherUtil.mapCompletableStage(newNextItemIdEither, updateItemOrder));
   }
 
   private CompletionStage<Either<Errors, Void>> validateEntityAndChecklist(long checklistId,
