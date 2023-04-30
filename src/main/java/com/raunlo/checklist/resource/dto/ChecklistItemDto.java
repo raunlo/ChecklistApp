@@ -1,6 +1,5 @@
 package com.raunlo.checklist.resource.dto;
 
-import com.raunlo.checklist.resource.dto.Identifier;
 import io.soabase.recordbuilder.core.RecordBuilder;
 
 @RecordBuilder

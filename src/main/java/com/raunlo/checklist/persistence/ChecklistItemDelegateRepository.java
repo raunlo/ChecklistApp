@@ -5,13 +5,10 @@ import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
 import com.raunlo.checklist.core.repository.ChecklistItemRepository;
 import com.raunlo.checklist.persistence.dao.PostgresChecklistItemDao;
 import com.raunlo.checklist.persistence.mapper.ChecklistItemDboMapper;
+import com.raunlo.checklist.persistence.model.ChecklistItemsDbo;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -21,7 +18,6 @@ class ChecklistItemDelegateRepository implements ChecklistItemRepository {
   private final PostgresChecklistItemDao postgresChecklistItemDao;
   private final ChecklistItemDboMapper checklistItemDboMapper;
 
-  private final ExecutorService executorService;
 
 
   @Inject()
@@ -30,97 +26,91 @@ class ChecklistItemDelegateRepository implements ChecklistItemRepository {
 
     this.postgresChecklistItemDao = postgresChecklistItemDao;
     this.checklistItemDboMapper = checklistItemDboMapper;
-    this.executorService = Executors.newScheduledThreadPool(1);
   }
 
 
   @Override
-  public CompletionStage<ChecklistItem> save(final Long checklistId, final ChecklistItem entity) {
-    return CompletableFuture.supplyAsync(() -> postgresChecklistItemDao.insert(
-            checklistItemDboMapper.map(entity),
-            checklistId), executorService)
-        .thenApply(checklistItemDboMapper::map);
+  public ChecklistItem save(final Long checklistId, final ChecklistItem entity) {
+
+    final ChecklistItemsDbo dbo = checklistItemDboMapper.map(entity);
+    final ChecklistItemsDbo insertChecklistDboFuture =
+        postgresChecklistItemDao.insert(dbo, checklistId);
+
+    return checklistItemDboMapper.map(insertChecklistDboFuture);
   }
 
   @Override
-  public CompletionStage<ChecklistItem> update(final Long checklistId, final ChecklistItem entity) {
-    return CompletableFuture.supplyAsync(() -> {
-      postgresChecklistItemDao.updateTask(checklistId,
-          entity.getId(),
-          entity.isCompleted(),
-          entity.getName());
-      return entity;
-    }, executorService);
+  public ChecklistItem update(final Long checklistId, final ChecklistItem entity) {
+
+    postgresChecklistItemDao.updateTask(checklistId, entity.getId(),
+        entity.isCompleted(),
+        entity.getName());
+
+    return entity;
   }
 
   @Override
-  public CompletableFuture<Void> delete(final long checklistId, final long id) {
-    return CompletableFuture.runAsync(() ->
-        postgresChecklistItemDao.deleteById(checklistId, id), executorService);
+  public void delete(final long checklistId, final long id) {
+    postgresChecklistItemDao.deleteById(checklistId, id);
   }
 
   @Override
-  public CompletableFuture<Optional<ChecklistItem>> findById(final long checklistId,
+  public Optional<ChecklistItem> findById(final long checklistId,
       final long id) {
-    return CompletableFuture.supplyAsync(() ->
-            postgresChecklistItemDao.findById(checklistId, id), executorService)
-        .thenApply(checklistItem -> checklistItem.map(checklistItemDboMapper::map));
+
+    final Optional<ChecklistItemsDbo> checklistItemsDbo = postgresChecklistItemDao.findById(
+        checklistId, id);
+    return checklistItemsDbo.map(checklistItemDboMapper::map);
   }
 
   @Override
-  public CompletionStage<Collection<ChecklistItem>> getAll(final long checklistId,
+  public Collection<ChecklistItem> getAll(final long checklistId,
       final TaskPredefinedFilter predefinedFilter) {
-    return CompletableFuture.supplyAsync(() ->
-            postgresChecklistItemDao.getAllTasks(checklistId, predefinedFilter))
-        .thenApply(checklistItems -> checklistItems.stream()
-            .map(checklistItemDboMapper::map)
-            .toList());
+    final List<ChecklistItemsDbo> allChecklistDbos = postgresChecklistItemDao.getAllTasks(
+        checklistId,
+        predefinedFilter);
+    return allChecklistDbos.stream()
+        .map(checklistItemDboMapper::map)
+        .toList();
   }
 
   @Override
-  public CompletionStage<Collection<ChecklistItem>> saveAll(long checklistId,
+  public Collection<ChecklistItem> saveAll(long checklistId,
       List<ChecklistItem> checklistItems) {
-    return CompletableFuture.supplyAsync(() -> {
-          final var itemsDbos = checklistItems.stream()
-              .map(checklistItemDboMapper::map)
-              .toList();
+    final var itemsDbos = checklistItems.stream()
+        .map(checklistItemDboMapper::map)
+        .toList();
 
-          return postgresChecklistItemDao.saveAll(itemsDbos, checklistId);
-        })
-        .thenApply(
-            savedChecklistItems -> savedChecklistItems.stream().map(checklistItemDboMapper::map)
-                .toList());
+    final List<ChecklistItemsDbo> savedChecklistDbos = postgresChecklistItemDao.saveAll(itemsDbos,
+        checklistId);
+
+    return savedChecklistDbos.stream().map(checklistItemDboMapper::map).toList();
   }
 
   @Override
-  public CompletionStage<Void> removeTaskFromOrderLink(long checklistId, long taskId) {
-    return CompletableFuture.runAsync(() ->
-        postgresChecklistItemDao.removeTaskFromOrderLink(checklistId, taskId), executorService);
+  public void removeTaskFromOrderLink(long checklistId, long taskId) {
+    postgresChecklistItemDao.removeTaskFromOrderLink(checklistId, taskId);
   }
 
   @Override
-  public CompletionStage<Void> updateSavedItemOrderLink(long checklistId, long taskId) {
-    return CompletableFuture.runAsync(() ->
-            postgresChecklistItemDao.addNewlySavedChecklistItemOrderLink(checklistId, taskId),
-        executorService);
+  public void updateSavedItemOrderLink(long checklistId, long taskId) {
+    postgresChecklistItemDao.addNewlySavedChecklistItemOrderLink(checklistId, taskId);
   }
 
   @Override
-  public CompletableFuture<Void> updateChecklistItemOrderLink(long checklistId,
+  public void updateChecklistItemOrderLink(long checklistId,
       long checklistItemId,
       Long newNextChecklistItemId) {
-    return CompletableFuture.runAsync(() ->
-        postgresChecklistItemDao.updateChecklistItemOrder(checklistId, checklistItemId,
-            newNextChecklistItemId), executorService);
+    postgresChecklistItemDao.updateChecklistItemOrder(checklistId, checklistItemId,
+        newNextChecklistItemId);
   }
 
 
   @Override
-  public CompletionStage<Optional<Long>> findNewNextItemIdByOrderAndChecklistItemId(
+  public Optional<Long> findNewNextItemIdByOrderAndChecklistItemId(
       long checklistId,
       long orderNumber, long checklistItemId) {
-    return CompletableFuture.supplyAsync(
-        () -> postgresChecklistItemDao.findChecklistItemByOrder(checklistId,
-            orderNumber, checklistItemId), executorService);
+    return postgresChecklistItemDao.findChecklistItemByOrder(checklistId, orderNumber,
+        checklistItemId);
   }
 }

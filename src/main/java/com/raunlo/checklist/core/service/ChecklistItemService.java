@@ -12,23 +12,23 @@ import java.util.concurrent.CompletionStage;
 
 public interface ChecklistItemService {
 
-  CompletionStage<Either<Errors, ChecklistItem>> save(final Long checklistId,
+  Either<Errors, ChecklistItem> save(final Long checklistId,
     final ChecklistItem entity);
 
-  CompletionStage<Either<Errors, ChecklistItem>> update(final Long checklistId,
+  Either<Errors, ChecklistItem> update(final Long checklistId,
     final ChecklistItem entity);
 
-  CompletionStage<Either<Errors, Void>> delete(final Long checklistId,
+  Either<Errors, Void> delete(final Long checklistId,
     final Long id);
 
-  CompletionStage<Either<Errors, Optional<ChecklistItem>>> findById(
+  Either<Errors, Optional<ChecklistItem>> findById(
     final Long checklistId, final Long id);
 
-  CompletionStage<Either<Errors, Collection<ChecklistItem>>> getAll(
+  Either<Errors, Collection<ChecklistItem>> getAll(
     final Long checklistId, final TaskPredefinedFilter predefineFilter);
 
-  CompletionStage<Either<Errors, Collection<ChecklistItem>>> saveAll(
+  Either<Errors, Collection<ChecklistItem>> saveAll(
     List<ChecklistItem> baseItems, Long checklistId);
 
-  CompletionStage<Either<Errors, Void>> changeOrder(ChangeOrderRequest changeOrderRequest);
+  Either<Errors, Void> changeOrder(ChangeOrderRequest changeOrderRequest);
 }

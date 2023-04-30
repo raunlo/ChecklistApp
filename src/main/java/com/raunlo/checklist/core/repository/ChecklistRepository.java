@@ -16,5 +16,5 @@ public interface ChecklistRepository {
 
     CompletionStage<Collection<Checklist>> getAll();
 
-    CompletionStage<Boolean> exists(final long id);
+    boolean exists(final long id);
 }

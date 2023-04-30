@@ -76,7 +76,8 @@ public class ChecklistItemsResource extends BaseResource {
     }
 
     final var allItemsResponse =
-        checklistItemService.getAll(checklistId, checklistItemFilterMapper.mapFilter(filterDto));
+        CompletableFuture.completedFuture(checklistItemService.getAll(checklistId,
+            checklistItemFilterMapper.mapFilter(filterDto)));
     return this.mapResponse(allItemsResponse,
         entity -> this.ok(checklistItemDtoMapper.map(entity)));
   }
@@ -85,16 +86,18 @@ public class ChecklistItemsResource extends BaseResource {
   @Path("/{task_id}")
   public CompletionStage<Response> findTaskById(@PathParam("task_id") long taskId,
       @PathParam("checklist_id") Long checklistId) {
-    final var findByIdResponse = checklistItemService.findById(checklistId, taskId);
+    final var findByIdResponse = CompletableFuture.completedFuture(
+        checklistItemService.findById(checklistId, taskId));
     return this.mapResponse(findByIdResponse,
         entity -> this.ok(entity.map(checklistItemDtoMapper::map)));
   }
 
   @POST()
-  public CompletionStage<Response> saveTask(@NotNull @Valid ChecklistItemDto checklistItemDto,
+  public CompletionStage<Response> saveTask(@NotNull ChecklistItemDto checklistItemDto,
       @PathParam("checklist_id") Long checklistId, @Context UriInfo uriInfo) {
     final ChecklistItem checklistItem = checklistItemDtoMapper.map(checklistItemDto);
-    final var savedItemResponse = checklistItemService.save(checklistId, checklistItem);
+    final var savedItemResponse = CompletableFuture.completedFuture(
+        checklistItemService.save(checklistId, checklistItem));
 
     return this.mapResponse(savedItemResponse,
         savedItem -> created(uriInfo, checklistItemDtoMapper.map(savedItem)));
@@ -107,7 +110,8 @@ public class ChecklistItemsResource extends BaseResource {
 
     final ChecklistItem checklistItem = checklistItemDtoMapper.map(checklistItemDto, taskId);
 
-    final var itemUpdateResponse = checklistItemService.update(checklistId, checklistItem);
+    final var itemUpdateResponse = CompletableFuture.completedFuture(
+        checklistItemService.update(checklistId, checklistItem));
 
     return this.mapResponse(itemUpdateResponse,
         updatedTask -> this.ok(checklistItemDtoMapper.map(updatedTask)));
@@ -117,7 +121,8 @@ public class ChecklistItemsResource extends BaseResource {
   @Path("/{id}")
   public CompletionStage<Response> deleteTask(@PathParam("id") Long id,
       @PathParam("checklist_id") Long checklistId) {
-    final var deleteResponse = checklistItemService.delete(checklistId, id);
+    final var deleteResponse = CompletableFuture.completedFuture(
+        checklistItemService.delete(checklistId, id));
 
     return this.mapResponse(deleteResponse, __ -> Response.noContent().build());
   }
@@ -127,10 +132,10 @@ public class ChecklistItemsResource extends BaseResource {
   public CompletionStage<Response> changeTaskOrder(@NotNull ChangeOrderRequest changeOrderRequest,
       @PathParam("checklist_id") Long checklistId) {
 
-    final var response = checklistItemService.changeOrder(
+    final var response = CompletableFuture.completedFuture(checklistItemService.changeOrder(
         ChangeOrderRequestBuilder.builder(changeOrderRequest)
             .checklistId(checklistId)
-            .build());
+            .build()));
     return mapResponse(response, __ -> this.noContent());
   }
 
@@ -144,7 +149,8 @@ public class ChecklistItemsResource extends BaseResource {
         .map(checklistItemDto -> checklistItemDtoMapper.map(checklistItemDto, checklistId))
         .toList();
 
-    final var savedItemsResponse = checklistItemService.saveAll(checklistItems, checklistId);
+    final var savedItemsResponse = CompletableFuture.completedFuture(
+        checklistItemService.saveAll(checklistItems, checklistId));
 
     return this.mapResponse(savedItemsResponse,
         savedItems -> Response.status(201).entity(checklistItemDtoMapper.map(savedItems)).build());

@@ -5,6 +5,6 @@ import io.vavr.control.Either;
 import java.util.concurrent.CompletionStage;
 
 public interface BeanValidator {
-    <T> CompletionStage<Either<Errors, Void>> validate(T entity);
+    <T> Either<Errors, Void> validate(T entity);
 
 }

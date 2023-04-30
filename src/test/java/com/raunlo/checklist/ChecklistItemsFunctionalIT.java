@@ -13,7 +13,6 @@ import com.raunlo.checklist.resource.dto.error.ClientErrorsDto;
 import com.raunlo.checklist.testcontainers.PostgresSQLTestContainer;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusIntegrationTest;
-import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -179,7 +178,7 @@ public class ChecklistItemsFunctionalIT extends CommonChecklistOperations {
   @Test
   public void tooLongTaskNameReturns400() {
     final ChecklistDto createdItemList = createChecklist(
-        ChecklistDtoBuilder.builder().name("finds_all_tasks").build());
+        ChecklistDtoBuilder.builder().name("too_long_checklist_name").build());
 
     final ChecklistItemDto baseItemDto = ChecklistItemDtoBuilder.builder()
         .name("n".repeat(902))

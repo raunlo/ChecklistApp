@@ -6,11 +6,10 @@ import com.raunlo.checklist.core.entity.error.Errors;
 import com.raunlo.checklist.core.entity.error.ErrorsBuilder;
 import com.raunlo.checklist.core.repository.ChecklistRepository;
 import io.vavr.control.Either;
+import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
+import lombok.SneakyThrows;
 
 @ApplicationScoped
 public class ChecklistItemValidator implements
@@ -24,32 +23,37 @@ public class ChecklistItemValidator implements
   }
 
   @Override
-  public CompletionStage<Either<Errors, Void>> validateChecklistExistence(Long id) {
+  @SneakyThrows
+  public Either<Errors, Void> validateChecklistExistence(Long id) {
+
     if (id != null) {
-      return checklistRepository.exists(id)
-          .thenApply(exists -> {
-            if (!exists) {
-              final var error = ErrorBuilder.builder()
-                  .errorMessage("Checklist object doesn't exists with id: " + id)
-                  .field(null)
-                  .build();
 
-              return Either.left(ErrorsBuilder.builder()
-                  .errors(Set.of(error))
-                  .errorType(ErrorType.PARENT_ID_MISSING)
-                  .build());
-            }
-            return Either.right(null);
-          });
+        Boolean exists = checklistRepository.exists(id);
+
+        if (!exists) {
+          final var error = ErrorBuilder.builder()
+              .errorMessage("Checklist object doesn't exists with id: " + id)
+              .field(null)
+              .build();
+
+          return Either.left(ErrorsBuilder.builder()
+              .errors(Set.of(error))
+              .errorType(ErrorType.PARENT_ID_MISSING)
+              .build());
+        } else {
+          return Either.right(null);
+        }
+
+    } else {
+      final var error = ErrorBuilder.builder()
+          .errorMessage("Checklist object id is null for this request")
+          .field(null)
+          .build();
+
+      return Either.left(ErrorsBuilder.builder()
+          .errors(Set.of(error))
+          .errorType(ErrorType.PARENT_ID_FIELD_IS_NULL)
+          .build());
     }
-    final var error = ErrorBuilder.builder()
-        .errorMessage("Checklist object id is null for this request")
-        .field(null)
-        .build();
-
-    return CompletableFuture.completedStage(Either.left(ErrorsBuilder.builder()
-        .errors(Set.of(error))
-        .errorType(ErrorType.PARENT_ID_FIELD_IS_NULL)
-        .build()));
   }
 }

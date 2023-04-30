@@ -7,27 +7,27 @@ import com.raunlo.checklist.core.entity.error.Errors;
 import com.raunlo.checklist.core.entity.error.ErrorsBuilder;
 import com.raunlo.checklist.core.validator.BeanValidator;
 import io.vavr.control.Either;
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.control.ActivateRequestContext;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-@ApplicationScoped
+@Singleton
 public class BeanBeanValidatorImpl implements BeanValidator {
 
     private final Validator validator;
 
     @Inject
-    public BeanBeanValidatorImpl(javax.validation.Validator validatorBean) {
+    public BeanBeanValidatorImpl(Validator validatorBean) {
         this.validator = validatorBean;
     }
 
     @Override
-    public <T> CompletionStage<Either<Errors, Void>> validate(T entity) {
+    @ActivateRequestContext
+    public <T> Either<Errors, Void> validate(T entity) {
         final Set<ConstraintViolation<T>> validationResult = validator.validate(entity);
         final Set<Error> errors = validationResult.stream()
                 .map(violation ->
@@ -38,7 +38,7 @@ public class BeanBeanValidatorImpl implements BeanValidator {
                 .collect(Collectors.toSet());
 
         if (errors.isEmpty()) {
-            return CompletableFuture.completedStage(Either.right(null));
+            return Either.right(null);
         } else {
             final var errorsEither = Either.<Errors, Void>left(
                 ErrorsBuilder.builder()
@@ -46,7 +46,7 @@ public class BeanBeanValidatorImpl implements BeanValidator {
                     .errors(errors)
                     .build());
 
-            return CompletableFuture.completedStage(errorsEither);
+            return errorsEither;
         }
     }
 }
