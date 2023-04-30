@@ -3,25 +3,26 @@ package com.raunlo.checklist.core;
 import com.raunlo.checklist.core.entity.ChangeOrderRequest;
 import com.raunlo.checklist.core.entity.ChecklistItem;
 import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
+import com.raunlo.checklist.core.entity.error.Error;
+import com.raunlo.checklist.core.entity.error.ErrorType;
 import com.raunlo.checklist.core.entity.error.Errors;
-import com.raunlo.checklist.core.entity.internal.RepositoryQuery;
-import com.raunlo.checklist.core.entity.internal.RollbackAction;
+import com.raunlo.checklist.core.entity.error.ErrorsBuilder;
 import com.raunlo.checklist.core.repository.ChecklistItemRepository;
 import com.raunlo.checklist.core.service.ChecklistItemService;
-import com.raunlo.checklist.core.util.CompletableFutureUtils;
-import com.raunlo.checklist.core.util.EitherUtil;
 import com.raunlo.checklist.core.validator.BeanValidator;
 import com.raunlo.checklist.core.validator.ChecklistItemValidator;
 import io.vavr.control.Either;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
+import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import jdk.incubator.concurrent.StructuredTaskScope.ShutdownOnFailure;
+import lombok.SneakyThrows;
 
 @ApplicationScoped
 class ChecklistItemServiceImpl implements ChecklistItemService {
@@ -41,150 +42,204 @@ class ChecklistItemServiceImpl implements ChecklistItemService {
   }
 
   @Override
-  public CompletionStage<Either<Errors, ChecklistItem>> save(
+  @SneakyThrows
+  public Either<Errors, ChecklistItem> save(
       final Long checklistId, final ChecklistItem entity) {
 
-    final RepositoryQuery<ChecklistItem> saveChecklistItem = () ->
-        checklistItemRepository.save(checklistId, entity);
+    final Either<Errors, ChecklistItem> validationResult =
+        validateEntityAndChecklist(checklistId, List.of(entity));
 
-    final RollbackAction<ChecklistItem> rollbackFunction = (either) -> {
-      if (either.isRight()) {
-        final var id = either.get().getId();
-        return checklistItemRepository.removeTaskFromOrderLink(checklistId, either.get().getId())
-            .thenCompose(__ -> checklistItemRepository.delete(checklistId, id)
-                .thenApply(v -> either));
-      }
-      return CompletableFuture.completedFuture(either);
-    };
+    if (validationResult.isEmpty()) {
+      return validationResult;
+    }
 
-    final CompletionStage<Either<Errors, ChecklistItem>> saveItem =
-        validateEntityAndChecklist(checklistId, entity)
-            .thenCompose(validationResult ->
-                EitherUtil.mapCompletableStage(validationResult, saveChecklistItem))
+    try (final ShutdownOnFailure scope = new ShutdownOnFailure()) {
+      Future<ChecklistItem> saveChecklistItemFuture = scope.fork(() -> {
+        final ChecklistItem savedChecklistItem = checklistItemRepository.save(checklistId, entity);
+        checklistItemRepository.updateSavedItemOrderLink(checklistId, savedChecklistItem.getId());
+        return savedChecklistItem;
+      });
 
-            .thenCompose(savedChecklistItemEither -> {
-              if (savedChecklistItemEither.isRight()) {
-                return checklistItemRepository.updateSavedItemOrderLink(checklistId,
-                        savedChecklistItemEither.get().getId())
-                    .thenApply(__ -> savedChecklistItemEither);
-              }
-              return CompletableFuture.completedFuture(savedChecklistItemEither);
-            });
+      scope.join();
 
-    return CompletableFutureUtils.handleResponse(saveItem, rollbackFunction);
+      return Either.right(saveChecklistItemFuture.resultNow());
+    }
   }
 
   @Override
-  public CompletionStage<Either<Errors, ChecklistItem>> update(
+  @SneakyThrows
+  public Either<Errors, ChecklistItem> update(
       final Long checklistId, final ChecklistItem entity) {
 
-    final RepositoryQuery<ChecklistItem> updateChecklistItem = () ->
-        checklistItemRepository.update(checklistId, entity);
+    final Either<Errors, ChecklistItem> validationResult = validateEntityAndChecklist(checklistId,
+        List.of(entity));
 
-    return validateEntityAndChecklist(checklistId, entity)
-        .thenCompose(validationResult ->
-            EitherUtil.mapCompletableStage(validationResult, updateChecklistItem));
+    if (validationResult.isEmpty()) {
+      return validationResult;
+    }
+
+    try (final ShutdownOnFailure scope = new ShutdownOnFailure()) {
+      final Future<ChecklistItem> updatedChecklistItem = scope.fork(
+          () -> checklistItemRepository.update(checklistId, entity));
+
+      scope.join();
+      return Either.right(updatedChecklistItem.resultNow());
+    }
   }
 
 
   @Override
-  public CompletionStage<Either<Errors, Void>> delete(final Long checklistId, final Long id) {
+  @SneakyThrows
+  public Either<Errors, Void> delete(final Long checklistId, final Long id) {
 
-    final RepositoryQuery<Void> removeChecklistITemOrderLinks = () ->
+    final Either<Errors, Void> validationResult = checklistItemValidator.validateChecklistExistence(
+        checklistId);
+
+    if (validationResult.isEmpty()) {
+      return validationResult;
+    }
+
+    try (final ShutdownOnFailure scope = new ShutdownOnFailure()) {
+      scope.fork(() -> {
         checklistItemRepository.removeTaskFromOrderLink(checklistId, id);
-
-    final RepositoryQuery<Void> remoteChecklistItem = () ->
         checklistItemRepository.delete(checklistId, id);
+        return null;
+      });
 
-    return checklistItemValidator.validateChecklistExistence(checklistId)
-        .thenCompose(validationResult ->
-            EitherUtil.mapCompletableStage(validationResult, removeChecklistITemOrderLinks))
-        .thenCompose(updateOldTaskLinkResult ->
-            EitherUtil.mapCompletableStage(updateOldTaskLinkResult, remoteChecklistItem));
+      scope.join();
+
+      return Either.right(null);
+    }
   }
 
   @Override
-  public CompletionStage<Either<Errors, Optional<ChecklistItem>>> findById(
+  @SneakyThrows
+  public Either<Errors, Optional<ChecklistItem>> findById(
       final Long checklistId, final Long id) {
 
-    final RepositoryQuery<Optional<ChecklistItem>> findChecklistItem = () ->
-        checklistItemRepository.findById(checklistId, id);
+    final Either<Errors, Void> validationResult = checklistItemValidator.validateChecklistExistence(
+        checklistId);
 
-    return checklistItemValidator.validateChecklistExistence(checklistId)
-        .thenCompose(validationEither ->
-            EitherUtil.mapCompletableStage(validationEither, findChecklistItem));
+    if (validationResult.isEmpty()) {
+      return Either.left(validationResult.getLeft());
+    }
+
+    try (final ShutdownOnFailure scope = new ShutdownOnFailure()) {
+      final Future<Optional<ChecklistItem>> getTask = scope.fork(
+          () -> checklistItemRepository.findById(checklistId, id));
+
+      scope.join();
+
+      return Either.right(getTask.resultNow());
+    }
   }
 
   @Override
-  public CompletionStage<Either<Errors, Collection<ChecklistItem>>> getAll(
+  public Either<Errors, Collection<ChecklistItem>> getAll(
       final Long checklistId, final TaskPredefinedFilter predefineFilter) {
 
-    final RepositoryQuery<Collection<ChecklistItem>> getAllFunction = () ->
-        checklistItemRepository.getAll(checklistId, predefineFilter);
+    final Either<Errors, Void> validationResult = checklistItemValidator.validateChecklistExistence(
+        checklistId);
 
-    return checklistItemValidator.validateChecklistExistence(checklistId)
-        .thenCompose(validationEither ->
-            EitherUtil.mapCompletableStage(validationEither, getAllFunction));
+    if (validationResult.isEmpty()) {
+      return Either.left(validationResult.getLeft());
+    }
+
+    try (final ShutdownOnFailure scope = new ShutdownOnFailure()) {
+      final Future<Collection<ChecklistItem>> getItems = scope.fork(
+          () -> checklistItemRepository.getAll(checklistId, predefineFilter));
+      scope.join();
+
+      return Either.right(getItems.resultNow());
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+
   }
 
   @Override
-  public CompletionStage<Either<Errors, Collection<ChecklistItem>>> saveAll(
+  @SneakyThrows
+  public Either<Errors, Collection<ChecklistItem>> saveAll(
       List<ChecklistItem> checklistItems, Long checklistId) {
 
-    final var beanValidationStream = checklistItems.stream()
-        .map(validator::validate);
+    final Either<Errors, Collection<ChecklistItem>> validationErrors =
+        this.validateEntityAndChecklist(checklistId, checklistItems);
 
-    final var validations = Stream.concat(
-        Stream.of(checklistItemValidator.validateChecklistExistence(checklistId)),
-        beanValidationStream).toList();
+    if (validationErrors.isEmpty()) {
+      return validationErrors;
+    }
 
-    final var validationResult = CompletableFutureUtils.flatMapCompletableFuture(validations,
-        (oldEither, newEither) -> {
-          if (newEither.isLeft()) {
-            return newEither;
-          }
-          return oldEither;
-        });
+    try (ShutdownOnFailure scope = new ShutdownOnFailure()) {
+      final Future<Collection<ChecklistItem>> savedChecklistItemsFuture = scope.fork(
+          () -> checklistItemRepository.saveAll(checklistId, checklistItems));
 
-    final RepositoryQuery<Collection<ChecklistItem>> saveAllChecklistItemsFunction =
-        () -> checklistItemRepository.saveAll(checklistId, checklistItems);
+      scope.join();
 
-    return validationResult.thenCompose(validationResults ->
-        EitherUtil.mapCompletableStage(validationResults, saveAllChecklistItemsFunction));
-
+      return Either.right(savedChecklistItemsFuture.resultNow());
+    } catch (java.lang.Error e) {
+      System.out.println(e);
+    }
+    return null;
   }
 
   @Override
-  public CompletionStage<Either<Errors, Void>> changeOrder(
+  @SneakyThrows
+  public Either<Errors, Void> changeOrder(
       final ChangeOrderRequest changeOrderRequest) {
     final var checklistId = changeOrderRequest.checklistId();
     final var checklistItemId = changeOrderRequest.checklistItemId();
 
-    Function<Long, CompletionStage<Void>> updateItemOrder = newNextItemId ->
-        checklistItemRepository.updateChecklistItemOrderLink(checklistId, checklistItemId,
-            newNextItemId);
+    try (final ShutdownOnFailure scope = new ShutdownOnFailure()) {
+      final Future<Either<Errors, Void>> nextItemIdFuture = scope.fork(
+          () -> {
+            final Long nextItemId = checklistItemRepository.findNewNextItemIdByOrderAndChecklistItemId(
+                checklistId,
+                changeOrderRequest.newOrderNumber(),
+                checklistItemId
+            ).orElse(null);
+            checklistItemRepository.updateChecklistItemOrderLink(checklistId, checklistItemId,
+                nextItemId);
+            return Either.right(null);
+          });
 
-    return checklistItemRepository.findNewNextItemIdByOrderAndChecklistItemId(checklistId,
-            changeOrderRequest.newOrderNumber(), checklistItemId)
+      scope.join();
 
-        .thenApply(newNextItemId -> Either.<Errors, Long>right(newNextItemId.orElse(null)))
-
-        .thenCompose(newNextItemIdEither ->
-            EitherUtil.mapCompletableStage(newNextItemIdEither, updateItemOrder));
+      return nextItemIdFuture.get();
+    }
   }
 
-  private CompletionStage<Either<Errors, Void>> validateEntityAndChecklist(long checklistId,
-      ChecklistItem entity) {
-    final var checklistExistenceValidation = checklistItemValidator.validateChecklistExistence(
-        checklistId);
+  private <T> Either<Errors, T> validateEntityAndChecklist(long checklistId,
+      Collection<ChecklistItem> entities) {
+    try (final ShutdownOnFailure scope = new ShutdownOnFailure()) {
+      Future<List<Either<Errors, Void>>> checklistItemsValidations = scope.fork(
+          () -> entities.stream()
+              .map(validator::validate)
+              .toList());
 
-    return CompletableFutureUtils.flatMapCompletableFuture(
-        List.of(validator.validate(entity), checklistExistenceValidation),
-        (oldValue, newValue) -> {
-          if (newValue.isLeft()) {
-            return newValue;
-          }
-          return oldValue;
-        });
+      Future<Either<Errors, Void>> checklistValidation = scope.fork(() ->
+          checklistItemValidator.validateChecklistExistence(checklistId));
+
+      scope.join();
+
+      final Set<Error> errors = Stream.concat(checklistItemsValidations.resultNow().stream(),
+              Stream.of(checklistValidation.resultNow()))
+          .filter(Either::isLeft)
+          .map(Either::getLeft)
+          .map(Errors::errors)
+          .flatMap(Collection::parallelStream)
+          .collect(Collectors.toSet());
+
+      if (errors.isEmpty()) {
+        return Either.right(null);
+      } else {
+        return Either.left(ErrorsBuilder.builder()
+            .errorType(ErrorType.VALIDATION_ERROR)
+            .errors(errors)
+            .build());
+      }
+
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 }
