@@ -138,7 +138,7 @@ public interface PostgresChecklistItemDao extends Transactional<PostgresChecklis
                   checklistItemId, newNexChecklistItemId))
               .execute();
           handle.createUpdate(createUpdateChecklistItemOrderLinkQuery(checklistId, checklistItemId,
-              newNexChecklistItemId))
+                  newNexChecklistItemId))
               .execute();
         });
   }

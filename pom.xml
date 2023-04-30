@@ -141,6 +141,9 @@
         <configuration>
           <source>${java.version}</source>
           <target>${java.version}</target>
+          <jvmArgs>
+            --add-modules=jdk.incubator.concurrent
+          </jvmArgs>
         </configuration>
         <executions>
           <execution>
@@ -158,6 +161,8 @@
         <configuration>
           <compilerArgs>
             <arg>-parameters</arg>
+            <arg>--add-modules=jdk.incubator.concurrent</arg>
+            <arg>--enable-preview</arg>
           </compilerArgs>
           <annotationProcessorPaths>
             <path>
@@ -186,6 +191,10 @@
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             <maven.home>${maven.home}</maven.home>
           </systemPropertyVariables>
+          <argLine>
+            --add-modules=jdk.incubator.concurrent
+            --enable-preview
+          </argLine>
         </configuration>
       </plugin>
       <plugin>
@@ -208,6 +217,10 @@
           <includes>
             <include>*IT.java</include>
           </includes>
+          <argLine>
+            --add-modules=jdk.incubator.concurrent
+            --enable-preview
+          </argLine>
         </configuration>
       </plugin>
     </plugins>
