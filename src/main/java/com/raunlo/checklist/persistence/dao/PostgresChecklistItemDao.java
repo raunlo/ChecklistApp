@@ -4,6 +4,7 @@ import com.raunlo.checklist.core.entity.TaskPredefinedFilter;
 import com.raunlo.checklist.persistence.model.ChecklistItemsDbo;
 import java.util.List;
 import java.util.Optional;
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 import org.jdbi.v3.sqlobject.config.RegisterConstructorMapper;
 import org.jdbi.v3.sqlobject.customizer.Bind;
@@ -88,7 +89,8 @@ public interface PostgresChecklistItemDao extends Transactional<PostgresChecklis
        WHERE checklist_id = :checklistId AND next_task = :checklistItemId
       """)
   @Transaction(TransactionIsolationLevel.SERIALIZABLE)
-  void removeTaskFromOrderLink(@Bind("checklistId") long checklistId, @Bind("checklistItemId") long taskId);
+  void removeTaskFromOrderLink(@Bind("checklistId") long checklistId,
+      @Bind("checklistItemId") long taskId);
 
 
   @SqlUpdate("""
@@ -134,28 +136,40 @@ public interface PostgresChecklistItemDao extends Transactional<PostgresChecklis
         .useTransaction(TransactionIsolationLevel.SERIALIZABLE, tx -> {
           tx.removeTaskFromOrderLink(checklistId, checklistItemId);
           var handle = tx.getHandle();
-          handle.createUpdate(createUpdateChecklistItemPreviousItemOrderLinkQuery(checklistId,
-                  checklistItemId, newNexChecklistItemId))
-              .execute();
-          handle.createUpdate(createUpdateChecklistItemOrderLinkQuery(checklistId, checklistItemId,
-                  newNexChecklistItemId))
-              .execute();
+          updateChecklistItemPreviousItemOrderLink(checklistId, checklistItemId,
+              newNexChecklistItemId, handle);
+          updateChecklistItemOrderLink(checklistId, checklistItemId, newNexChecklistItemId, handle);
         });
   }
 
-  private String createUpdateChecklistItemOrderLinkQuery(long checklistId, Long checklistItemId,
-      Long newNexChecklistItemId) {
-    return "UPDATE TASK SET next_task = " + newNexChecklistItemId
-        + "\n WHERE checklist_id = " + checklistId + "and task_id = " + checklistItemId;
+  private void updateChecklistItemOrderLink(long checklistId, Long checklistItemId,
+      Long newNexChecklistItemId, Handle handle) {
+
+    handle.createUpdate("""
+                    UPDATE TASK SET next_task = :newNexChecklistItemId
+                    WHERE checklist_id = :checklistId  and task_id =  :checklistItemId;
+            """)
+        .bind("newNexChecklistItemId", newNexChecklistItemId)
+        .bind("checklistId", checklistId)
+        .bind("checklistItemId", checklistItemId)
+        .execute();
   }
 
-  private String createUpdateChecklistItemPreviousItemOrderLinkQuery(long checklistId,
+  private void updateChecklistItemPreviousItemOrderLink(long checklistId,
       long checklistItemId,
-      Long newNexChecklistItemId) {
-    return "UPDATE TASK SET next_task = " + checklistItemId
-        + "\n WHERE checklist_id = " + checklistId
-        + "and task_id = (select task_id from task where next_task = " + newNexChecklistItemId
-        + " and checklist_id = " + checklistId + ")";
+      Long newNexChecklistItemId,
+      Handle handle) {
+
+    handle.createUpdate("""
+                UPDATE TASK SET next_task = :checklistItemId
+                WHERE checklist_id = :checklistId and 
+                task_id = (select task_id from task where COALESCE(NEXT_TASK, 0) = COALESCE(:newNexChecklistItemId, 0)
+                and checklist_id = :checklistId)
+            """)
+        .bind("checklistId", checklistId)
+        .bind("newNexChecklistItemId", newNexChecklistItemId)
+        .bind("checklistItemId", checklistItemId)
+        .execute();
   }
 
 }
