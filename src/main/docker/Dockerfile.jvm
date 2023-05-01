@@ -75,7 +75,7 @@
 #   accessed directly. (example: "foo.example.com,bar.example.com")
 #
 ###
-FROM amazoncorretto:19-al2-jdk
+FROM amazoncorretto:20-al2-jdk
 
 ENV LANGUAGE='en_US:en'
 
